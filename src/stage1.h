@@ -45,4 +45,5 @@ typedef struct
 	SDL_Rect position;
 	int state,code;
 }door3;
+SDL_Rect camera;
 #endif
