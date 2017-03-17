@@ -1,48 +1,54 @@
-int input ()
+int input (int *continuer)
 {
 	int up=0,down=0,right=0,left=0,space=0;
 	while (SDL_PollEvent(&event))
 		{
-			case SDL_KEYDOWN:
-			switch(event.key.keysym.sym)
-	            {
-	                case SDLK_RIGHT: 
-						right=1;
-					break;
-	                case SDLK_LEFT: 
-						left=1;
-					break;
-	                case SDLK_UP: 
-						up=1;
-					break;
-	                case SDLK_DOWN: 
-						down=1;
-					break;
-	                case SDLK_SPACE: 
-						space=1;
-					break;
-				}
-			break;
-			case SDL_KEYUP
-			switch(event.key.keysym.sym)
-				{
-					case SDLK_RIGHT: 
-						right=0;
-					break;
-	                case SDLK_LEFT: 
-						left=0;
-					break;
-	                case SDLK_UP: 
-						up=0;
-					break;
-	                case SDLK_DOWN: 
-						down=0;
-					break;
-	                case SDLK_SPACE: 
-						space=0;
-					break;
-				}
-			break;
+			switch(event.type)
+        	{
+				case SDL_QUIT:
+	                (*continuer) = 0;
+	            break;
+				case SDL_KEYDOWN:
+				switch(event.key.keysym.sym)
+		            {
+		                case SDLK_RIGHT: 
+							right=1;
+						break;
+		                case SDLK_LEFT: 
+							left=1;
+						break;
+		                case SDLK_UP: 
+							up=1;
+						break;
+		                case SDLK_DOWN: 
+							down=1;
+						break;
+		                case SDLK_SPACE: 
+							space=1;
+						break;
+					}
+				break;
+				case SDL_KEYUP:
+				switch(event.key.keysym.sym)
+					{
+						case SDLK_RIGHT: 
+							right=0;
+						break;
+		                case SDLK_LEFT: 
+							left=0;
+						break;
+		                case SDLK_UP: 
+							up=0;
+						break;
+		                case SDLK_DOWN: 
+							down=0;
+						break;
+		                case SDLK_SPACE: 
+							space=0;
+						break;
+					}
+				break;
+			}
 		}
 		if (right)
 		{
