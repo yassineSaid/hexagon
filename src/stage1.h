@@ -9,7 +9,7 @@ typedef struct
 	SDL_Rect position,position_affichage;
 	SDL_Surface *still,*walk_left[7],*walk_right[7],*jump[5],*jump_left[7],*jump_right[7],*sliding[7],*duck[3];
 	int state,tentatives,inventory;
-	char name[6];
+	char name[6],images[50];
 }perso;
 typedef struct 
 {
