@@ -12,37 +12,37 @@ typedef struct
 }perso;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int angle,reflection;
 }mirror;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state;
 }socrates;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state;
 }bucket;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state;
 }plant;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state;
 }door1;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state;
 }door2;
 typedef struct 
 {
-	SDL_Rect position;
+	SDL_Rect position,position_affichage;
 	int state,code;
 }door3;
 typedef struct 
