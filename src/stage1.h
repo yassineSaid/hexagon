@@ -4,11 +4,16 @@
 #include <SDL/SDL_image.h> 
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
+
+#define level_width 10000
+#define level_height 600
+#define screen_width 1366
+#define screen_height 600
 typedef struct
 {
 	SDL_Rect position,position_affichage;
 	SDL_Surface *still,*walk_left[7],*walk_right[7],*jump[5],*jump_left[7],*jump_right[7],*sliding[7],*duck[3];
-	int state,tentatives,inventory;
+	int state,tentatives,inventory,height,width;
 	char name[6],images[50];
 }perso;
 typedef struct 
@@ -50,6 +55,8 @@ typedef struct
 {
 	int left,right,up,down;
 }inpu;
+void stage1();
 void input (int *continuer,int *f,int *s,inpu *in);
 int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera);
+void scrolling (perso *per, SDL_Rect *camera);
 #endif
