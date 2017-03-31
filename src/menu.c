@@ -166,7 +166,7 @@ int menu ()
 		if (curseur==5)
 		{
 			Mix_PlayChannel(1, ding, 0);
-			help(policeHelp,pos.tailleHelp,couleurHelp,&i,&pos,ecran);
+			help(pos.tailleHelp,couleurHelp,&i,&pos,ecran);
 			Mix_PlayChannel(1, ding, 0);
 		}
 		if (curseur==6)
@@ -362,7 +362,6 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 				if (eventm.button.button == SDL_BUTTON_LEFT)
 				{
 					enter=1;
-					printf("%d,%d\n",eventm.motion.x,eventm.motion.y);
 				}
 			break;
 			case SDL_MOUSEMOTION:
@@ -620,15 +619,15 @@ void smallscreen(position *pos)
     (*pos).positionMouseSetting[3][1].x = (*pos).positionTexteSetting[3].x+(*pos).positionTexteSetting[3].w;
     (*pos).positionMouseSetting[3][1].y = (*pos).positionTexteSetting[3].y+(*pos).positionTexteSetting[3].h;
 }
-void help(char policeHelp[],int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surface *ecran)
+void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surface *ecran)
 {
-	int continuer,j;
+	int continuer=1,j;
 	SDL_Event event;
 	TTF_Font *police;
 	SDL_Surface *Menu_anime[108], *texte[9];
-	char menu_a[40];
+	char menu_a[40],policeH[]="polices/Cardinal.ttf";
     SDL_Rect positionFond;
-	police = TTF_OpenFont(policeHelp, tailleHelp);
+	police = TTF_OpenFont(policeH, tailleHelp);
 	texte[0] = TTF_RenderText_Blended(police, "Brave Wanderer tells the story of a brave voyager, Dante, ", couleurHelp);
     texte[1] = TTF_RenderText_Blended(police, "a wanderer walking through the different stages of hell.", couleurHelp);
     texte[2] = TTF_RenderText_Blended(police, "In his eternal search for Beatrice, the Lady Eternal,", couleurHelp);
@@ -638,7 +637,6 @@ void help(char policeHelp[],int tailleHelp, SDL_Color couleurHelp, int *p, posit
     texte[6] = TTF_RenderText_Blended(police, "blood, feet that was swift in running to mischief, hearts", couleurHelp);
     texte[7] = TTF_RenderText_Blended(police, "that longed for wicked acts and false witnesses who spoke", couleurHelp);
     texte[8] = TTF_RenderText_Blended(police, "lies.", couleurHelp);
-
 	positionFond.x = 0;
     positionFond.y = 0;
     while (continuer)
