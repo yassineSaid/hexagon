@@ -16,7 +16,7 @@ int menu();
 void pause();
 void fullscreen(position *pos);
 void smallscreen(position *pos);
-void help(char policeHelp[],int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surface *ecran);
+void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surface *ecran);
 void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk *ding,int *p);
 void TxtSetting (SDL_Surface *texteSetting[], SDL_Surface *texteSettingu[], position *pos);
 #endif
