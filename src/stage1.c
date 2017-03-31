@@ -1,4 +1,5 @@
 #include "stage1.h"
+#include "collision.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h> 
 #include <SDL/SDL_mixer.h>
@@ -21,10 +22,15 @@ void stage1()
 	while (continuer!=0)
     {
     	input(&continuer,&f,&s,&in);
+	    a=collision_back(&per);
+	    while(a!=5)
+	    {
+	    	
 		m=Deplacement_Perso(&per,f,&s,&camera);
 	    scrolling(&per,&camera);
-		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
-		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
+	    }
+		SDL_BlitSurface(fond,&camera,ecran,&positionFond);
+		SDL_BlitSurface(bass,NULL,ecran,&per.position_affichage);
 		SDL_Flip(ecran);
 		m=0;
     }
