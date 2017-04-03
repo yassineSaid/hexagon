@@ -16,6 +16,7 @@ int menu ()
     int curseur=1,continuer=1,m=0,i,fix=0,ac=1,j,cont=1,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
     char policeHelp[]="polices/Cardinal.ttf",policeSetting[]="polices/TrueLies.ttf";
     char menu_a[40],butt[11];
+	Uint32 start;
  
  	strcpy(pos.smenu,"images/menu2/menu_");
  	smallscreen(&pos);
@@ -62,6 +63,7 @@ int menu ()
     }*/
     while (continuer!=0)
     {
+    	start=SDL_GetTicks();
 	if (curseur==-1)
 		{curseur=6;ac=6;}
 	if (curseur>6)
@@ -193,6 +195,8 @@ int menu ()
     	Mix_PlayChannel(1, ding, 0);
     	ac = curseur;
     }
+    if (1000/FPS>SDL_GetTicks()-start)
+    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
     Mix_FreeMusic(musique);
     Mix_FreeChunk(ding);
@@ -214,6 +218,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 	SDL_Color couleurSettingu = {228, 93, 13};
 	SDL_Rect positionFond;
 	char policeSetting[]="polices/TrueLies.ttf", menu_a[40];
+	Uint32 start;
 
 	positionFond.x = 0;
     positionFond.y = 0;
@@ -438,6 +443,8 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 			continuer=0;
 		}
 		enter=0;
+		if (1000/FPS>SDL_GetTicks()-start)
+    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
 	}
 	}
 }
@@ -627,6 +634,7 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
 	SDL_Surface *Menu_anime[108], *texte[9];
 	char menu_a[40],policeH[]="polices/Cardinal.ttf";
     SDL_Rect positionFond;
+    Uint32 start;
 	police = TTF_OpenFont(policeH, tailleHelp);
 	texte[0] = TTF_RenderText_Blended(police, "Brave Wanderer tells the story of a brave voyager, Dante, ", couleurHelp);
     texte[1] = TTF_RenderText_Blended(police, "a wanderer walking through the different stages of hell.", couleurHelp);
@@ -665,6 +673,8 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
 	            break;
 	        }
     	}
+    	if (1000/FPS>SDL_GetTicks()-start)
+    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
 
 }
