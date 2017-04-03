@@ -255,7 +255,7 @@ int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level
 		(*per).state=0;
 	}
 	col=collision_back(per,level);
-	if (col==1)
+	if (col!=10)
 	{
 		(*per)=per_0;
 		
@@ -472,7 +472,7 @@ couleur[6]=GetPixel (a.back_col, point[6].x, point[6].y);
 couleur[7]=GetPixel (a.back_col, point[7].x, point[7].y);
 
   
-/*if (couleur[1].r==0 && couleur[1].g==0 && couleur[1].b==0)
+if (couleur[1].r!=255 && couleur[1].g!=255 && couleur[1].b!=255)
 return 10;
 
 
@@ -483,9 +483,9 @@ else if (couleur[1].r==255 && couleur[1].g==255 && couleur[1].b==255)
 return 3;
 
 else if ((couleur[2].r==255 && couleur[2].g==255 && couleur[2].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[7].r==255 && couleur[7].g==255 && couleur[7].b==255))
-return 2;*/
+return 2;
 
-if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)||(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)||(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
+else if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)||(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)||(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
 return 1;
 
 else return 0;
@@ -526,7 +526,7 @@ int detec_sol (int x,background a)
 {
 	int i,y;
 	SDL_Color couleur;
-	i=level_height;
+	i=level_height-50;
 	y=0;
 	while ((i>0)&&(y==0))
 	{
