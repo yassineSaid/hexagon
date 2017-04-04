@@ -255,7 +255,7 @@ int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level
 		(*per).state=0;
 	}
 	col=collision_back(per,level);
-	if (col!=10)
+	if (col==1)
 	{
 		(*per)=per_0;
 		
