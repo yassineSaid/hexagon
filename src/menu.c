@@ -3,11 +3,92 @@
 #include <SDL/SDL_image.h> 
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
+void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const char chemin_f[], SDL_Surface *ecran)
+{
+    int i;
+    char Image_path[50];
+    a->positionFond.x=0;
+    a->positionFond.y=0;
+    if (a->resolution_courante==1)
+    {
+        for (i=0; i<=nombre_images; i++)
+        {
+            sprintf(Image_path,"%s%05d.jpg",chemin_w,i);
+            a->intro[i]=IMG_Load(Image_path);
+        }
+        ecran=SDL_SetVideoMode(800,600,32,SDL_HWSURFACE|SDL_DOUBLEBUF);
+    }
+    else if (a->resolution_courante==2)
+    {
+        for (i=0; i<=nombre_images; i++)
+        {
+            sprintf(Image_path,"%s%05d.jpg",chemin_f,i);
+            a->intro[i]=IMG_Load(Image_path);
+        }
+        ecran=SDL_SetVideoMode(1366,768,32,SDL_HWSURFACE|SDL_FULLSCREEN|SDL_DOUBLEBUF);
+    }
+}
+void cinematique(position *a,int nombre_de_images,const char *song_name, SDL_Surface *ecran)
+{
+    const int FPS=28;
+    Uint32 start;
+    int i=0,fix=0,continuer=1;
+    Mix_Music *musique;
+    SDL_Event event;
+    musique = Mix_LoadMUS(song_name);
+    Mix_PlayMusic(musique, -1);
+    while (continuer)
+    {
+        start=SDL_GetTicks();
+        if (i==nombre_de_images)
+        {
+            continuer=0;
+        }
+        SDL_BlitSurface(a->intro[i],NULL,ecran,&a->positionFond);
+        SDL_Flip(ecran);
+        i++;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+                continuer=0;
+                break;
+            case SDL_KEYUP:
+                fix=0;
+                break;
+            case SDL_KEYDOWN:
+                if (!fix)
+                {
+                    switch (event.key.keysym.sym)
+                    {
+                    case SDLK_RETURN:
+                    {
+                        continuer=0;
+                    }
+                    break;
+                    default:
+                        break;
+                    }
+                }
+                fix=1;
+                break;
+            }
+        }
+        if (1000/FPS>SDL_GetTicks()-start)
+       SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+    }
+    Mix_FreeMusic(musique);
+
+    for (i=0; i<=nombre_de_images; i++)
+    {
+        SDL_FreeSurface(a->intro[i]);
+    }
+    SDL_FreeSurface(ecran);
+}
 int menu ()
 {
-	SDL_Surface *ecran = NULL, *button[6], *buttonu[6];
-    SDL_Surface *Menu_anime[108];
-    SDL_Surface  *texteHelp[9];
+	SDL_Surface *ecran = NULL;
     position pos;
     SDL_Event event,eventm;
     Mix_Music *musique;
@@ -16,16 +97,28 @@ int menu ()
     int curseur=1,continuer=1,m=0,i,fix=0,ac=1,j,cont=1,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
     char policeHelp[]="polices/Cardinal.ttf",policeSetting[]="polices/TrueLies.ttf";
     char menu_a[40],butt[11];
+    const int FPS=40;
 	Uint32 start;
- 
+ 	const SDL_VideoInfo* myPointer = SDL_GetVideoInfo();
+ 	if (pos.resolution_courante==1)
+	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+	else
+		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+	sprintf(pos.nom_fichier,"config.txt");
+	read_file(&pos);
+	initialiser_intro(&pos,445,"images/intro/intro_","images/intro2/intro_",ecran);
+    pos.resolution_antecedante=pos.resolution_courante;
+    cinematique(&pos,445,"music/intt.mp3",ecran);
+    initialiser_intro(&pos,445,"images/post_intro/p_intro","images/post_intro2/p_intro",ecran);
+    cinematique(&pos,118,"music/intt.mp3",ecran);
+	printf("test\n");
+	loading(&pos);
+	printf("test\n");
  	strcpy(pos.smenu,"images/menu2/menu_");
- 	smallscreen(&pos);
- 	fullscreen(&pos);
  
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
- 	const SDL_VideoInfo* myPointer = SDL_GetVideoInfo();
-    ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+    
     SDL_WM_SetCaption("Brave Wanderer", NULL);
     pos.police = TTF_OpenFont(policeHelp, pos.tailleHelp);
     if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1) 
@@ -37,25 +130,13 @@ int menu ()
     	fprintf(stderr, "Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
     	exit(EXIT_FAILURE);
 	}
- 
+ 	
     ding = Mix_LoadWAV("music/ding.wav");
     musique = Mix_LoadMUS("music/musique.mp3");
     Mix_PlayMusic(musique, 2);
     Mix_Volume(1,MIX_MAX_VOLUME-(volb*7));
-    for (i=0; i<=24; i++)
-    {
-	sprintf(menu_a,"%s%05d.jpg",pos.smenu,i);
-        Menu_anime[i]=IMG_Load(menu_a);
-        SDL_BlitSurface(Menu_anime[i],NULL,ecran,&pos.positionFond);
-        SDL_Flip(ecran);
-    }
-    for (j=0;j<6;j++)
-    {
-    	sprintf(butt,"buttons/button%d.png",j+1);
-    	button[j] = IMG_Load(butt);
-    	sprintf(butt,"buttons/button%du.png",j+1);
-    	buttonu[j] = IMG_Load(butt);
-    }
+    pos.positionFond.x=0;
+    pos.positionFond.y=0;
     /*for (i=0; i<=108; i++)
     {
         sprintf(menu_a,"menu2/menu_%05d.jpg",i);
@@ -64,19 +145,21 @@ int menu ()
     while (continuer!=0)
     {
     	start=SDL_GetTicks();
-	if (curseur==-1)
-		{curseur=6;ac=6;}
-	if (curseur>6)
-		{curseur=1;ac=1;}
-	if (i>107) i=0;
-	if (pos.anim<107)
-	{
-		sprintf(menu_a,"%s%05d.jpg",pos.smenu,i);
-		Menu_anime[i]=IMG_Load(menu_a);
-	}
-    SDL_BlitSurface(Menu_anime[i],NULL,ecran,&pos.positionFond);
-    i++;
-    pos.anim++;
+		if (curseur==0)
+			{curseur=6;ac=6;}
+		if (curseur>6)
+			{curseur=1;ac=1;}
+		if (i>152) i=0;
+		if (pos.resolution_courante==1)
+	    	{
+	    		SDL_BlitSurface(pos.Menu_anime[i][0],NULL,ecran,&pos.positionFond);
+	    	}
+		else
+			{
+				SDL_BlitSurface(pos.Menu_anime[i][1],NULL,ecran,&pos.positionFond);
+			}
+	    i++;
+	    pos.anim++;
     while (SDL_PollEvent(&event))
 	{
         switch(event.type)
@@ -182,11 +265,11 @@ int menu ()
 	{
 		if ((j+1)==curseur)
 		{
-			SDL_BlitSurface(buttonu[j], NULL, ecran, &pos.positionButtonu[j]);
+			SDL_BlitSurface(pos.buttonu[j], NULL, ecran, &pos.positionButtonu[j]);
 		}
 		else
 		{
-			SDL_BlitSurface(button[j], NULL, ecran, &pos.positionButton[j]);
+			SDL_BlitSurface(pos.button[j], NULL, ecran, &pos.positionButton[j]);
 		}
 	}
         SDL_Flip(ecran);
@@ -197,6 +280,15 @@ int menu ()
     }
     if (1000/FPS>SDL_GetTicks()-start)
     	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+    }
+    pos.f=fopen("config.txt","w");
+    if (pos.resolution_courante==1)
+    {
+        fprintf(pos.f,"mode1");
+    }
+    else  if (pos.resolution_courante==2)
+    {
+        fprintf(pos.f,"mode2");
     }
     Mix_FreeMusic(musique);
     Mix_FreeChunk(ding);
@@ -213,11 +305,12 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 	int curseur=1,continuer=1,j,ac=1,i,enter=0;
 	TTF_Font *police;
 	SDL_Event eventm;
-	SDL_Surface  *texteSetting[4], *texteSettingu[4], *volume[20], *Menu_anime[108];
+	SDL_Surface  *texteSetting[4], *texteSettingu[4], *volume[20];
 	SDL_Color couleurSetting = {247, 199, 134};
 	SDL_Color couleurSettingu = {228, 93, 13};
 	SDL_Rect positionFond;
 	char policeSetting[]="polices/TrueLies.ttf", menu_a[40];
+	const int FPS=40;
 	Uint32 start;
 
 	positionFond.x = 0;
@@ -225,10 +318,11 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 	TxtSetting (texteSetting,texteSettingu,pos);
 	while (continuer)
 	{
-		if ((*p)>107) (*p)=0;
-	   	sprintf(menu_a,"%s%05d.jpg",(*pos).smenu,(*p));
-		Menu_anime[(*p)]=IMG_Load(menu_a);
-	    SDL_BlitSurface(Menu_anime[(*p)],NULL,ecran,&positionFond);
+		if ((*p)>107) (*p)=0;    
+		if (pos->resolution_courante==1)
+	    	SDL_BlitSurface(pos->Menu_anime[(*p)][0],NULL,ecran,&pos->positionFond);
+		else
+			SDL_BlitSurface(pos->Menu_anime[(*p)][1],NULL,ecran,&pos->positionFond);
 	    (*p)++;
 		if (ac!=curseur)
 		{
@@ -425,6 +519,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 				Mix_PlayChannel(1, ding, 0);
 				fullscreen(pos);
 				SDL_FreeSurface(ecran);
+				pos->resolution_courante=2;
 				ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
 				TxtSetting (texteSetting,texteSettingu,pos);
 			}
@@ -432,6 +527,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 			{
 				Mix_PlayChannel(1, ding, 0);
 				smallscreen(pos);
+				pos->resolution_courante=1;
 				SDL_FreeSurface(ecran);
 				ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 				TxtSetting (texteSetting,texteSettingu,pos);
@@ -631,10 +727,12 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
 	int continuer=1,j;
 	SDL_Event event;
 	TTF_Font *police;
-	SDL_Surface *Menu_anime[108], *texte[9];
+	SDL_Surface *texte[9];
 	char menu_a[40],policeH[]="polices/Cardinal.ttf";
     SDL_Rect positionFond;
     Uint32 start;
+    const int FPS=40;
+
 	police = TTF_OpenFont(policeH, tailleHelp);
 	texte[0] = TTF_RenderText_Blended(police, "Brave Wanderer tells the story of a brave voyager, Dante, ", couleurHelp);
     texte[1] = TTF_RenderText_Blended(police, "a wanderer walking through the different stages of hell.", couleurHelp);
@@ -650,9 +748,10 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
     while (continuer)
     {
     	if ((*p)>107) (*p)=0;
-	   	sprintf(menu_a,"%s%05d.jpg",(*pos).smenu,(*p));
-		Menu_anime[(*p)]=IMG_Load(menu_a);
-	    SDL_BlitSurface(Menu_anime[(*p)],NULL,ecran,&positionFond);
+		if (pos->resolution_courante==1)
+	    	SDL_BlitSurface(pos->Menu_anime[(*p)][0],NULL,ecran,&pos->positionFond);
+		else
+			SDL_BlitSurface(pos->Menu_anime[(*p)][1],NULL,ecran,&pos->positionFond);
 	    (*p)++;
 	    for (j=0;j<9;j++)
 		{
@@ -701,4 +800,96 @@ void TxtSetting (SDL_Surface *texteSetting[], SDL_Surface *texteSettingu[], posi
 		texteSetting[2] = TTF_RenderText_Blended(police, "Windowed", couleurSetting);
 		texteSettingu[2] = TTF_RenderText_Blended(police, "Windowed", couleurSettingu);
 	}
+}
+void loading(position *pos)
+{
+    const int FPS=60;
+    Uint32 start;
+    SDL_Thread *thread = NULL;
+    thread = SDL_CreateThread( initialiser,(void*)pos);
+    char path[50];
+    int i,loaded=0;
+    SDL_Surface  *Menu_anime[250],*ecran=NULL;
+   
+ 	if (pos->resolution_courante==1)
+	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+	else
+		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+    if (pos->resolution_courante==1)
+    {for (i=0; i<210; i++)
+        {
+            sprintf(path,"images/loading_f/loading animation_%05d.jpg",i);
+            Menu_anime[i]=IMG_Load(path);
+        }}
+    else if (pos->resolution_courante==2)
+    {for (i=0; i<210; i++)
+        {
+            sprintf(path,"images/loading_f2/loading animation_%05d.jpg",i);
+            Menu_anime[i]=IMG_Load(path);
+        }}
+    i=0;
+    while(loaded!=1)
+    {
+        start=SDL_GetTicks();
+        if (i>209)
+        {
+            i=0;
+            loaded++;
+        }
+        SDL_BlitSurface(Menu_anime[i],NULL,ecran,NULL);
+        SDL_Flip(ecran);
+        i++;
+        if (1000/FPS>SDL_GetTicks()-start)
+        SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+    }
+    SDL_WaitThread(thread,NULL);
+    SDL_FreeSurface(ecran);
+}
+int initialiser(void *ptr)
+{
+    position *a = (position*)ptr;
+    int i;
+    char aa[50];
+    smallscreen(a);
+    if (a->resolution_courante==2)
+    {
+        fullscreen(a);
+    }
+    for (i=0; i<=152; i++)
+    {
+        sprintf(aa,"images/menu2/menu_%05d.jpg",i);
+        a->Menu_anime[i][0]=IMG_Load(aa);
+    }
+    for (i=0; i<=152; i++)
+    {
+        sprintf(aa,"images/menu3/menu_%05d.jpg",i);
+        a->Menu_anime[i][1]=IMG_Load(aa);
+    }
+    for (i=0; i<=5; i++)
+    {
+        sprintf(aa,"buttons/button%d.png",i+1);
+        a->button[i]=IMG_Load(aa);
+        fprintf(stderr,"button%d.jpg",i+1);
+        sprintf(aa,"buttons/button%du.png",i+1);
+        a->buttonu[i]=IMG_Load(aa);
+    }
+    return 0;
+}
+void read_file(position *a)
+{
+    char mode[10];
+    a->f=fopen(a->nom_fichier,"r");
+    if (a->f!=NULL)
+    {
+        fscanf(a->f,"%s",mode);
+    }
+    if (strcmp(mode,"mode1")==0)
+    {
+        a->resolution_courante=1;
+    }
+    else if (strcmp(mode,"mode2")==0)
+    {
+        a->resolution_courante=2;
+    }
+    fclose(a->f);
 }
