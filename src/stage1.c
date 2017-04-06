@@ -1,40 +1,32 @@
 #include "stage1.h"
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h> 
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 void stage1()
 {
-	int continuer=1,x=0,y=0,f=0,m=0,s=0;
-	SDL_Surface *ecran = NULL,*fond = NULL;
+	int continuer=1,f=0,s=0;
+	SDL_Surface *ecran = NULL;
 	SDL_Rect positionFond,camera;
-	SDL_Event event;
 	background level;
 	perso per;
 	inpu in;
 	SDL_Init(SDL_INIT_VIDEO);
-	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-    
+	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	init (&per,&camera,&positionFond,&in,ecran,&level);
-	SDL_BlitSurface(level.back_col,&camera,ecran,&positionFond);
-	SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
-	SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
-	scrolling(&per,&camera);
-	//SDL_Flip(ecran);
 	while (continuer!=0)
     {
     	input(&continuer,&f,&s,&in);
-		m=Deplacement_Perso(&per,&f,&s,&camera,level);
+		Deplacement_Perso(&per,&f,&s,&camera,level);
 	    scrolling(&per,&camera);
 	    animation(&per);
 		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
 		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
 		SDL_Flip(ecran);
-		m=0;
     }
     SDL_FreeSurface(ecran);
     SDL_Quit();
- 
+
 }
 void input (int *continuer, int *f,int *s,inpu *in)
 {
@@ -53,37 +45,41 @@ void input (int *continuer, int *f,int *s,inpu *in)
 		            	case SDLK_ESCAPE:
 							(*continuer)=0;
 						break;
-		                case SDLK_RIGHT: 
+		                case SDLK_RIGHT:
 							(*in).right=1;
 						break;
-		                case SDLK_LEFT: 
+		                case SDLK_LEFT:
 							(*in).left=1;
 						break;
-		                case SDLK_UP: 
+		                case SDLK_UP:
 							space=1;
 						break;
-		                /*case SDLK_DOWN: 
+		                /*case SDLK_DOWN:
 							(*in).down=1;
 						break;*/
-		                case SDLK_SPACE: 
+		                case SDLK_SPACE:
 							space=1;
+						break;
+						default:
 						break;
 					}
 				break;
 				case SDL_KEYUP:
 				switch(event.key.keysym.sym)
 					{
-						case SDLK_RIGHT: 
+						case SDLK_RIGHT:
 							(*in).right=0;
 						break;
-		                case SDLK_LEFT: 
+		                case SDLK_LEFT:
 							(*in).left=0;
 						break;
-		                case SDLK_UP: 
+		                case SDLK_UP:
 							(*in).up=0;
 						break;
-		                case SDLK_DOWN: 
+		                case SDLK_DOWN:
 							(*in).down=0;
+						break;
+						default:
 						break;
 					}
 				break;
@@ -135,9 +131,9 @@ void input (int *continuer, int *f,int *s,inpu *in)
 		}
 
 }
-int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level)
+void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level)
 {
-	int col,m=0,i=8,f;
+	int col,f;
 	perso per_0;
 	per_0=(*per);
 	(*per).state=0;
@@ -148,7 +144,7 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 		(*per).speed=5;
 	if ((*s)<=-1)
 	{
-		if ((*s)<=-3)	
+		if ((*s)<=-3)
 		{
 			(*per).position.y+=(*s);
 			(*s)+=2;
@@ -177,14 +173,12 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 		{
 			(*per).position.x+=(*per).speed;
 			(*per).state=1;
-			m=1;
 		}
 	}
 	else if (f==2)
 	{
 		if ((*per).position.x>50)
 		{
-			m=1;
 			(*per).position.x-=(*per).speed;
 			(*per).state=2;
 		}
@@ -193,7 +187,6 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.y>0)
 		{
-			m=1;
 			(*per).position.y-=(*per).speed;
 		}
 	}
@@ -201,7 +194,6 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.y<260)
 		{
-			m=1;
 			(*per).position.y+=(*per).speed;
 		}
 	}
@@ -209,12 +201,10 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.x<5950)
 		{
-			m=1;
 			(*per).position.x+=(*per).speed;
 		}
 		if ((*per).position.y>0)
 		{
-			m=1;
 			(*per).position.y-=(*per).speed;
 		}
 	}
@@ -222,12 +212,10 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.x>50)
 		{
-			m=1;
 			(*per).position.x-=(*per).speed;
 		}
 		if ((*per).position.y>0)
 		{
-			m=1;
 			(*per).position.y-=(*per).speed;
 		}
 	}
@@ -235,12 +223,10 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.x<5950)
 		{
-			m=1;
 			(*per).position.x+=(*per).speed;
 		}
 		if ((*per).position.y<260)
 		{
-			m=1;
 			(*per).position.y+=(*per).speed;
 		}
 	}
@@ -248,12 +234,10 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	{
 		if ((*per).position.x>50)
 		{
-			m=1;
 			(*per).position.x-=(*per).speed;
 		}
 		if ((*per).position.y<260)
 		{
-			m=1;
 			(*per).position.y+=(*per).speed;
 		}
 	}
@@ -274,9 +258,8 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 		(*per).state=0;
 		(*l)=0;
 	}
-	else if ((*s)==0) 
-		(*per).position.y=detec_sol((per->position.x + per->render->w/2 + per->width/2),level)-147;
-	return m;
+	else if ((*s)==0)
+		(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-147);
 }
 void scrolling (perso *per, SDL_Rect *camera)
 {
@@ -320,6 +303,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
 	(*level).back=IMG_Load("stage1 edit.jpg");
 	(*level).back_col=IMG_Load("stage1_col.png");
+	(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),*level)-147);
 	(*camera).x=6000;
 	(*camera).y=0;
 	(*camera).h=600;
@@ -424,7 +408,7 @@ couleur[5]=GetPixel (a.back_col, point[5].x, point[5].y);
 couleur[6]=GetPixel (a.back_col, point[6].x, point[6].y);
 couleur[7]=GetPixel (a.back_col, point[7].x, point[7].y);
 
-  
+
 /*if (couleur[0].r!=255 || couleur[0].g!=255 || couleur[0].b!=255)
 return 10;
 
