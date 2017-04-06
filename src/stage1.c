@@ -270,6 +270,7 @@ int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background leve
 	}
 	else if (col==5)
 	{
+		(*per)=per_0;
 		(*per).state=0;
 		(*l)=0;
 	}
@@ -316,7 +317,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	strcpy((*per).name,"Dante");
 	strcpy((*per).images,"pablo_testing_imin/pablo_");
 	sprintf(im,"%sstill.png",(*per).images);
-	(*per).render=IMG_Load("bassem.png");
+	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
 	(*level).back=IMG_Load("stage1 edit.jpg");
 	(*level).back_col=IMG_Load("stage1_col.png");
 	(*camera).x=6000;
