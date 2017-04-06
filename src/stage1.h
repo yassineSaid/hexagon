@@ -12,7 +12,7 @@
 #define screen_height 600
 typedef struct 
 {
-	SDL_Surface *back[6],*back_col;
+	SDL_Surface *back[6],*back_col,*back1;
 	int anim;
 }background;
 typedef struct
