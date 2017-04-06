@@ -1,8 +1,9 @@
 #include "menu.h"
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h> 
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
+#include <SDL/SDL_thread.h>
 void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const char chemin_f[], SDL_Surface *ecran)
 {
     int i;
@@ -90,16 +91,18 @@ int menu ()
 {
 	SDL_Surface *ecran = NULL;
     position pos;
-    SDL_Event event,eventm;
+    SDL_Event event;
     Mix_Music *musique;
     Mix_Chunk *ding;
     SDL_Color couleurHelp = {247, 199, 134};
-    int curseur=1,continuer=1,m=0,i,fix=0,ac=1,j,cont=1,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
-    char policeHelp[]="polices/Cardinal.ttf",policeSetting[]="polices/TrueLies.ttf";
-    char menu_a[40],butt[11];
+    int curseur=1,continuer=1,i,fix=0,ac=1,j,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
+    char policeHelp[]="polices/Cardinal.ttf";
     const int FPS=40;
 	Uint32 start;
- 	const SDL_VideoInfo* myPointer = SDL_GetVideoInfo();
+	SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+
  	if (pos.resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
@@ -113,22 +116,8 @@ int menu ()
     cinematique(&pos,118,"music/intt.mp3",ecran);
 	loading(&pos);
  	strcpy(pos.smenu,"images/menu2/menu_");
- 
-    SDL_Init(SDL_INIT_VIDEO);
-    TTF_Init();
-    
     SDL_WM_SetCaption("Brave Wanderer", NULL);
     pos.police = TTF_OpenFont(policeHelp, pos.tailleHelp);
-    if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1) 
-    {
-    	printf("%s", Mix_GetError());
-    }
-    if(TTF_Init() == -1)
-	{
-    	fprintf(stderr, "Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
-    	exit(EXIT_FAILURE);
-	}
- 	
     ding = Mix_LoadWAV("music/ding.wav");
     musique = Mix_LoadMUS("music/musique.mp3");
     Mix_PlayMusic(musique, 2);
@@ -173,10 +162,10 @@ int menu ()
 				{
                 	switch(event.key.keysym.sym)
                 	{
-                    case SDLK_UP: 
+                    case SDLK_UP:
 						curseur--;
                     break;
-                    case SDLK_DOWN: 
+                    case SDLK_DOWN:
 						curseur++;
                     break;
 		    		case SDLK_KP_ENTER:
@@ -186,6 +175,8 @@ int menu ()
 						enter=1;
                     break;
 					//fix=1;
+					default:
+					break;
 					}
                 }
             break;
@@ -294,29 +285,22 @@ int menu ()
     SDL_FreeSurface(ecran);
     TTF_Quit();
     SDL_Quit();
- 
+
     return stage;
 
 }
 void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk *ding, int *p)
 {
 	int curseur=1,continuer=1,j,ac=1,i,enter=0;
-	TTF_Font *police;
 	SDL_Event eventm;
 	SDL_Surface  *texteSetting[4], *texteSettingu[4], *volume[20];
-	SDL_Color couleurSetting = {247, 199, 134};
-	SDL_Color couleurSettingu = {228, 93, 13};
-	SDL_Rect positionFond;
-	char policeSetting[]="polices/TrueLies.ttf", menu_a[40];
 	const int FPS=40;
 	Uint32 start;
-
-	positionFond.x = 0;
-    positionFond.y = 0;
 	TxtSetting (texteSetting,texteSettingu,pos);
 	while (continuer)
 	{
-		if ((*p)>107) (*p)=0;    
+        start=SDL_GetTicks();
+		if ((*p)>152) (*p)=0;
 		if (pos->resolution_courante==1)
 	    	SDL_BlitSurface(pos->Menu_anime[(*p)][0],NULL,ecran,&pos->positionFond);
 		else
@@ -327,12 +311,12 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 			Mix_PlayChannel(1, ding, 0);
 			ac=curseur;
 		}
-		if (curseur==5) 
+		if (curseur==5)
 		{
 			curseur=1;
 			ac=1;
 		}
-		if (curseur==0) 
+		if (curseur==0)
 		{
 			curseur=4;
 			ac=4;
@@ -365,7 +349,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 				volume[j] = IMG_Load("buttons/vol1.png");
  				SDL_BlitSurface(volume[j], NULL, ecran, &(*pos).positionVolumeM[20-j]);
 			}
-			
+
    		}
 		for (j=(*volm);j>0;j--)
 		{
@@ -389,7 +373,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 				volume[j] = IMG_Load("buttons/vol1.png");
  				SDL_BlitSurface(volume[j], NULL, ecran, &(*pos).positionVolumeB[20-j]);
 			}
-			
+
    		}
 		for (j=(*volb);j>0;j--)
 		{
@@ -399,9 +383,9 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 		SDL_Flip(ecran);
 		while (SDL_PollEvent(&eventm))
 		{
-		switch(eventm.type)	
+		switch(eventm.type)
 		{
-			case SDL_KEYDOWN: 
+			case SDL_KEYDOWN:
 				switch(eventm.key.keysym.sym)
 				{
 					case SDLK_UP:
@@ -453,6 +437,8 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 					case SDLK_KP_ENTER:
 						enter=1;
 					break;
+					default:
+					break;
 				}
 			break;
 			case SDL_MOUSEBUTTONUP:
@@ -478,6 +464,8 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
             	{
             		curseur=4;
             	}
+            break;
+            default:
             break;
    		}
 	}
@@ -537,16 +525,16 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
 			continuer=0;
 		}
 		enter=0;
-		if (1000/FPS>SDL_GetTicks()-start)
-    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
 	}
+	if (1000/FPS>SDL_GetTicks()-start)
+    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
 	}
 }
 void pause()
 {
     int continuer = 1;
     SDL_Event event;
- 
+
     while (continuer)
     {
         SDL_WaitEvent(&event);
@@ -558,8 +546,12 @@ void pause()
                     case SDLK_ESCAPE:
 			continuer = 0;
                         break;
+                    default:
+                    break;
                 }
                 break;
+        default:
+        break;
         }
     }
 }
@@ -625,7 +617,7 @@ void fullscreen(position *pos)
 }
 void smallscreen(position *pos)
 {
-	int i,j;
+	int i;
 	strcpy((*pos).smenu,"images/menu2/menu_");
     (*pos).full=0;
     for (i=0;i<20;i++)
@@ -726,8 +718,7 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
 	SDL_Event event;
 	TTF_Font *police;
 	SDL_Surface *texte[9];
-	char menu_a[40],policeH[]="polices/Cardinal.ttf";
-    SDL_Rect positionFond;
+	char policeH[]="polices/Cardinal.ttf";
     Uint32 start;
     const int FPS=40;
 
@@ -741,10 +732,9 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
     texte[6] = TTF_RenderText_Blended(police, "blood, feet that was swift in running to mischief, hearts", couleurHelp);
     texte[7] = TTF_RenderText_Blended(police, "that longed for wicked acts and false witnesses who spoke", couleurHelp);
     texte[8] = TTF_RenderText_Blended(police, "lies.", couleurHelp);
-	positionFond.x = 0;
-    positionFond.y = 0;
     while (continuer)
     {
+        start=SDL_GetTicks();
     	if ((*p)>107) (*p)=0;
 		if (pos->resolution_courante==1)
 	    	SDL_BlitSurface(pos->Menu_anime[(*p)][0],NULL,ecran,&pos->positionFond);
@@ -765,6 +755,8 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
 	                {
 	                    case SDLK_ESCAPE:
 							continuer = 0;
+	                    break;
+	                    default:
 	                    break;
 	                }
 	            break;
@@ -808,7 +800,7 @@ void loading(position *pos)
     char path[50];
     int i,loaded=0;
     SDL_Surface  *Menu_anime[250],*ecran=NULL;
-   
+
  	if (pos->resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
