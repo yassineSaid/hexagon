@@ -8,7 +8,7 @@ int initialiser_cinematique(void *ptr)
 {
     position *a = (position*)ptr;
     char chemin_w[50]={"images/cinematique_p/cinematique1_"},chemin_f[50]={"images/cinematique/cinematique1_"},Image_path[50];
-    int i,nombre_images=863;
+    int i,nombre_images=951;
     a->positionFond.x=0;
     a->positionFond.y=0;
     if (a->resolution_courante==1)
@@ -251,13 +251,24 @@ int menu ()
     	}
     	mouse=0;
 	}
+	for (j=0;j<6;j++)
+	{
+		if ((j+1)==curseur)
+		{
+			SDL_BlitSurface(pos.buttonu[j], NULL, ecran, &pos.positionButtonu[j]);
+		}
+		else
+		{
+			SDL_BlitSurface(pos.button[j], NULL, ecran, &pos.positionButton[j]);
+		}
+	}
 	if (enter==1)
 	{
 		if (curseur==1)
 		{
 			stage=1;
 			loading_c(&pos);
-			cinematique(&pos,pos.Cinematique,864,"music/op.mp3",ecran);
+			cinematique(&pos,pos.Cinematique,951,"music/op.mp3",ecran);
 			continuer=0;
 		}
 		if (curseur==4)
@@ -276,17 +287,6 @@ int menu ()
 			continuer = 0;
 		}
 		enter=0;
-	}
-	for (j=0;j<6;j++)
-	{
-		if ((j+1)==curseur)
-		{
-			SDL_BlitSurface(pos.buttonu[j], NULL, ecran, &pos.positionButtonu[j]);
-		}
-		else
-		{
-			SDL_BlitSurface(pos.button[j], NULL, ecran, &pos.positionButton[j]);
-		}
 	}
         SDL_Flip(ecran);
     if (ac!=curseur)
