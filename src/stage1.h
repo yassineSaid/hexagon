@@ -62,7 +62,7 @@ typedef struct
 }inpu;
 void stage1();
 void input (int *continuer,int *f,int *s,inpu *in);
-int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level);
+int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level);
 void scrolling (perso *per, SDL_Rect *camera);
 void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level);
 int collision_back(perso *dante,background a);

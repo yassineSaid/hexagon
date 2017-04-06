@@ -19,11 +19,12 @@ void stage1()
 	SDL_BlitSurface(level.back_col,&camera,ecran,&positionFond);
 	SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
 	SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
+	scrolling(&per,&camera);
 	//SDL_Flip(ecran);
 	while (continuer!=0)
     {
     	input(&continuer,&f,&s,&in);
-		m=Deplacement_Perso(&per,f,&s,&camera,level);
+		m=Deplacement_Perso(&per,&f,&s,&camera,level);
 	    scrolling(&per,&camera);
 	    animation(&per);
 		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
@@ -130,16 +131,21 @@ void input (int *continuer, int *f,int *s,inpu *in)
 		}
 		if ((space)&&((*s)==0))
 		{
-			(*s)=-20;
+			(*s)=-18;
 		}
 
 }
-int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level)
+int Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level)
 {
-	int col,m=0,i=8;
+	int col,m=0,i=8,f;
 	perso per_0;
 	per_0=(*per);
 	(*per).state=0;
+	f=(*l);
+	if ((*s)!=0)
+		(*per).speed=7;
+	else
+		(*per).speed=5;
 	if ((*s)<=-1)
 	{
 		if ((*s)<=-3)	
@@ -154,7 +160,7 @@ int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level
 	}
 	if ((*s)>=1)
 	{
-		if (collision_back(per,level)!=2)
+		if ((*per).position.y<detec_sol(per->position.x + per->render->w-87,level)-147)
 		{
 			(*per).position.y+=(*s);
 			(*s)++;
@@ -262,8 +268,13 @@ int Deplacement_Perso (perso *per,int f,int *s,SDL_Rect *camera,background level
 		(*per).state=0;
 		(*s)=0;
 	}
+	else if (col==5)
+	{
+		(*per).state=0;
+		(*l)=0;
+	}
 	else if ((*s)==0) 
-		(*per).position.y=detec_sol(per->position.x + per->render->w-87,level)-147;
+		(*per).position.y=detec_sol((per->position.x + per->render->w/2 + per->width/2),level)-147;
 	return m;
 }
 void scrolling (perso *per, SDL_Rect *camera)
@@ -293,10 +304,10 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 {
 	int i;
 	char im[50];
-	(*per).position.x=10;
+	(*per).position.x=6000;
 	//(*per).position_affichage.x=10;
-	(*per).height=175;
-	(*per).width=175;
+	(*per).height=120;
+	(*per).width=22;
 	(*per).state=0;
 	(*per).state0=1;
 	(*per).anim=0;
@@ -308,7 +319,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	(*per).render=IMG_Load("bassem.png");
 	(*level).back=IMG_Load("stage1 edit.jpg");
 	(*level).back_col=IMG_Load("stage1_col.png");
-	(*camera).x=0;
+	(*camera).x=6000;
 	(*camera).y=0;
 	(*camera).h=600;
 	(*camera).w=1366;
@@ -373,34 +384,35 @@ SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y)
 }
 int collision_back(perso *dante,background a)
 {
+	int col=0;
 
 SDL_Rect point[8];
 SDL_Color couleur[8];
 
-point[0].x=dante->position.x + dante->render->w-87;
-point[0].y=dante->position.y + dante->render->h/2;
-
-
-point[4].x=dante->position.x + dante->render->w-87;
+point[4].x=dante->position.x + dante->render->w/2 + dante->width/2; //HAUT DROIT
 point[4].y=dante->position.y + dante->render->h/4;
 
-point[5].x=dante->position.x + dante->render->w-87;
+point[0].x=dante->position.x + dante->render->w/2 + dante->width/2; //CENTRE DROIT
+point[0].y=dante->position.y + dante->render->h/2;
+
+point[5].x=dante->position.x + dante->render->w/2 + dante->width/2; //BAS DROIT
 point[5].y=dante->position.y + (dante->render->h*3)/4;
 
-point[1].x=dante->position.x + dante->render->w/2;
+point[1].x=dante->position.x + dante->render->w/2; //CENTRE BAS
 point[1].y=dante->position.y + dante->render->h;
 
-point[2].x=dante->position.x+87;
-point[2].y=dante->position.y + dante->render->h/2;
+point[3].x=dante->position.x + dante->render->w/2; //CENTRE HAUT
+point[3].y=dante->position.y;
 
-point[6].x=dante->position.x+87;
+point[6].x=dante->position.x + dante->render->w/2 - dante->width/2; //HAUT GAUCHE
 point[6].y=dante->position.y + dante->render->h/4;
 
-point[7].x=dante->position.x+87;
+point[2].x=dante->position.x + dante->render->w/2 - dante->width/2; //CENTRE GAUCHE
+point[2].y=dante->position.y + dante->render->h/2;
+
+point[7].x=dante->position.x + dante->render->w/2 - dante->width/2; //BAS GAUCHE
 point[7].y=dante->position.y + (dante->render->h*3)/4;
 
-point[3].x=dante->position.x + dante->render->w/2;
-point[3].y=dante->position.y;
 
 couleur[0]=GetPixel (a.back_col, point[0].x, point[0].y);
 couleur[1]=GetPixel (a.back_col, point[1].x, point[1].y);
@@ -416,19 +428,23 @@ couleur[7]=GetPixel (a.back_col, point[7].x, point[7].y);
 return 10;
 
 else if (couleur[1].r==255 && couleur[1].g==255 && couleur[1].b==255)
-return 3;
+return 3;*/
 
-else if ((couleur[2].r==255 && couleur[2].g==255 && couleur[2].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[7].r==255 && couleur[7].g==255 && couleur[7].b==255))
-return 2;*/
+if ((couleur[2].r==255 && couleur[2].g==255 && couleur[2].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[7].r==255 && couleur[7].g==255 && couleur[7].b==255))
+	col= 3;
 if (couleur[3].r==255 && couleur[3].g==255 && couleur[3].b==255)
-return 4;
-else if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)&&(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)&&(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
-return 1;
-else if (couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255)
-return 2;
+	col= 4;
+if ((couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255))
+	col= 5;
+/*if ((couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255))
+return 5;*/
+if (couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255)
+	col= 2;
+if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)&&(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)&&(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
+	col= 1;
 
 
-else return 0;
+return col;
 
 }
 void animation(perso *per)
