@@ -18,7 +18,7 @@ void map()
     
 	init1 (&per,&camera,&positionFond,&in,ecran,&level);
 	SDL_BlitSurface(level.back_col,&camera,ecran,&positionFond);
-	SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
+	SDL_BlitSurface(level.back1,&camera,ecran,&positionFond);
 	SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
 	scrolling1(&per,&camera);
 	SDL_Flip(ecran);
@@ -28,7 +28,7 @@ void map()
 		m=Deplacement_Perso1(&per,&f,&s,&camera,level);
 	    scrolling1(&per,&camera);
 	    animation1(&per);
-		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
+		SDL_BlitSurface(level.back1,&camera,ecran,&positionFond);
 		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
 		SDL_Flip(ecran);
 		m=0;
@@ -321,7 +321,7 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 	strcpy((*per).images,"pablo_testing_imin/pablo_");
 	sprintf(im,"%sstill.png",(*per).images);
 	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
-	(*level).back=IMG_Load("Map.jpg");
+	(*level).back1=IMG_Load("Map.jpg");
 	(*level).back_col=IMG_Load("Map_col.jpg");
 	(*camera).x=6000;
 	(*camera).y=0;

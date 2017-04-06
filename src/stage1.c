@@ -11,13 +11,14 @@ void stage1()
 	background level;
 	perso per;
 	inpu in;
-	const int FPS=40;
+	const int FPS=60;
 	Uint32 start;
 	SDL_Init(SDL_INIT_VIDEO);
 	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	init (&per,&camera,&positionFond,&in,ecran,&level);
 	while (continuer!=0)
     {
+    	start=SDL_GetTicks();
     	input(&continuer,&f,&s,&in);
 		Deplacement_Perso(&per,&f,&s,&camera,level);
 	    scrolling(&per,&camera);
@@ -141,7 +142,7 @@ void input (int *continuer, int *f,int *s,inpu *in)
 		}
 		if ((space)&&((*s)==0))
 		{
-			(*s)=-18;
+			(*s)=-16;
 		}
 
 }
@@ -153,9 +154,9 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	(*per).state=0;
 	f=(*l);
 	if ((*s)!=0)
-		(*per).speed=7;
+		(*per).speed=4;
 	else
-		(*per).speed=5;
+		(*per).speed=3;
 	if ((*s)<=-1)
 	{
 		if ((*s)<=-3)
@@ -170,10 +171,14 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	if ((*s)>=1)
 	{
-		if ((*per).position.y<detec_sol(per->position.x + per->render->w-87,level)-147)
+		if ((*per).position.y<detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
 		{
 			(*per).position.y+=(*s);
 			(*s)++;
+			if ((*per).position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
+			{
+				(*per).position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2));
+			}
 		}
 		else
 		{
@@ -275,7 +280,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 		(*per).state=0;
 	}
 	else if ((*s)==0)
-		(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-147);
+		(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
 }
 void scrolling (perso *per, SDL_Rect *camera)
 {
@@ -307,8 +312,8 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	char anim_eau[20];
 	(*per).position.x=20;
 	//(*per).position_affichage.x=10;
-	(*per).height=120;
-	(*per).width=22;
+	(*per).height=143;
+	(*per).width=26;
 	(*per).state=0;
 	(*per).state0=1;
 	(*per).anim=0;
