@@ -11,6 +11,8 @@ void stage1()
 	background level;
 	perso per;
 	inpu in;
+	const int FPS=40;
+	Uint32 start;
 	SDL_Init(SDL_INIT_VIDEO);
 	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	init (&per,&camera,&positionFond,&in,ecran,&level);
@@ -23,6 +25,8 @@ void stage1()
 		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
 		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
 		SDL_Flip(ecran);
+		if (1000/FPS>SDL_GetTicks()-start)
+    	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
     SDL_FreeSurface(ecran);
     SDL_Quit();
@@ -254,9 +258,11 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (col==5)
 	{
-		(*per)=per_0;
+		if ((*l)==1)
+			(*per).position.x-=(*per).speed;
+		if ((*l)==2)
+			(*per).position.x+=(*per).speed;
 		(*per).state=0;
-		(*l)=0;
 	}
 	else if ((*s)==0)
 		(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-147);
