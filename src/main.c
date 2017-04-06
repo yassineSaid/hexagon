@@ -8,8 +8,8 @@
 #include "stage1.h"
 int main(int argc, char *argv[])
 {
-    int stage;
-    stage=menu();
+    int stage=1;
+    //stage=menu();
     if (stage==1)
     {
     	stage1();
