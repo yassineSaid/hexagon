@@ -173,7 +173,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	if (f==1)
 	{
-		if ((*per).position.x<10950)
+		if ((*per).position.x<(level_width-per->render->w))
 		{
 			(*per).position.x+=(*per).speed;
 			(*per).state=1;
@@ -181,7 +181,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==2)
 	{
-		if ((*per).position.x>50)
+		if ((*per).position.x>-(per->render->w/2)+(per->width/2)+2)
 		{
 			(*per).position.x-=(*per).speed;
 			(*per).state=2;
@@ -203,7 +203,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==5)
 	{
-		if ((*per).position.x<5950)
+		if ((*per).position.x<(level_width-per->render->w))
 		{
 			(*per).position.x+=(*per).speed;
 		}
@@ -214,7 +214,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==6)
 	{
-		if ((*per).position.x>50)
+		if ((*per).position.x>(per->render->w/2)+(per->width/2)+2)
 		{
 			(*per).position.x-=(*per).speed;
 		}
@@ -225,7 +225,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==7)
 	{
-		if ((*per).position.x<5950)
+		if ((*per).position.x<(level_width-per->render->w))
 		{
 			(*per).position.x+=(*per).speed;
 		}
@@ -236,7 +236,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==8)
 	{
-		if ((*per).position.x>50)
+		if ((*per).position.x>(per->render->w/2)+(per->width/2)+2)
 		{
 			(*per).position.x-=(*per).speed;
 		}
@@ -294,7 +294,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 {
 	int i;
 	char im[50];
-	(*per).position.x=6000;
+	(*per).position.x=9800;
 	//(*per).position_affichage.x=10;
 	(*per).height=120;
 	(*per).width=22;

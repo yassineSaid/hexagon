@@ -4,6 +4,31 @@
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_thread.h>
+int initialiser_cinematique(void *ptr)
+{
+    position *a = (position*)ptr;
+    char chemin_w[50]={"images/cinematique_p/cinematique1_"},chemin_f[50]={"images/cinematique/cinematique1_"},Image_path[50];
+    int i,nombre_images=863;
+    a->positionFond.x=0;
+    a->positionFond.y=0;
+    if (a->resolution_courante==1)
+    {
+        for (i=0; i<=nombre_images; i++)
+        {
+            sprintf(Image_path,"%s%05d.jpg",chemin_w,i);
+            a->Cinematique[i]=IMG_Load(Image_path);
+        }
+    }
+    else if (a->resolution_courante==2)
+    {
+        for (i=0; i<=nombre_images; i++)
+        {
+            sprintf(Image_path,"%s%05d.jpg",chemin_f,i);
+            a->Cinematique[i]=IMG_Load(Image_path);
+        }
+    }
+    return 0;
+}
 void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const char chemin_f[], SDL_Surface *ecran)
 {
     int i;
@@ -17,7 +42,6 @@ void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const
             sprintf(Image_path,"%s%05d.jpg",chemin_w,i);
             a->intro[i]=IMG_Load(Image_path);
         }
-        ecran=SDL_SetVideoMode(800,600,32,SDL_HWSURFACE|SDL_DOUBLEBUF);
     }
     else if (a->resolution_courante==2)
     {
@@ -26,10 +50,9 @@ void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const
             sprintf(Image_path,"%s%05d.jpg",chemin_f,i);
             a->intro[i]=IMG_Load(Image_path);
         }
-        ecran=SDL_SetVideoMode(1366,768,32,SDL_HWSURFACE|SDL_FULLSCREEN|SDL_DOUBLEBUF);
     }
 }
-void cinematique(position *a,int nombre_de_images,const char *song_name, SDL_Surface *ecran)
+void cinematique(position *a,SDL_Surface **intro,int nombre_de_images,const char *song_name, SDL_Surface *ecran)
 {
     const int FPS=28;
     Uint32 start;
@@ -45,7 +68,7 @@ void cinematique(position *a,int nombre_de_images,const char *song_name, SDL_Sur
         {
             continuer=0;
         }
-        SDL_BlitSurface(a->intro[i],NULL,ecran,&a->positionFond);
+        SDL_BlitSurface(intro[i],NULL,ecran,&a->positionFond);
         SDL_Flip(ecran);
         i++;
         while (SDL_PollEvent(&event))
@@ -83,13 +106,14 @@ void cinematique(position *a,int nombre_de_images,const char *song_name, SDL_Sur
 
     for (i=0; i<=nombre_de_images; i++)
     {
-        SDL_FreeSurface(a->intro[i]);
+        SDL_FreeSurface(intro[i]);
     }
     SDL_FreeSurface(ecran);
 }
 int menu ()
 {
 	SDL_Surface *ecran = NULL;
+	SDL_Thread *thread1;
     position pos;
     SDL_Event event;
     Mix_Music *musique;
@@ -102,18 +126,19 @@ int menu ()
 	SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
-
+    sprintf(pos.nom_fichier,"config.txt");
+	read_file(&pos);
+	pos.resolution_antecedante=pos.resolution_courante;
  	if (pos.resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
 		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-	sprintf(pos.nom_fichier,"config.txt");
-	read_file(&pos);
+    thread1 = SDL_CreateThread(initialiser_cinematique,(void*)&pos);
 	initialiser_intro(&pos,445,"images/intro/intro_","images/intro2/intro_",ecran);
-    pos.resolution_antecedante=pos.resolution_courante;
-    cinematique(&pos,445,"music/intt.mp3",ecran);
+    cinematique(&pos,pos.intro,445,"music/intt.mp3",ecran);
     initialiser_intro(&pos,445,"images/post_intro/p_intro","images/post_intro2/p_intro",ecran);
-    cinematique(&pos,118,"music/intt.mp3",ecran);
+    cinematique(&pos,pos.intro,118,"music/intt.mp3",ecran);
+    SDL_WaitThread(thread1,NULL);
 	loading(&pos);
  	strcpy(pos.smenu,"images/menu2/menu_");
     SDL_WM_SetCaption("Brave Wanderer", NULL);
@@ -231,6 +256,8 @@ int menu ()
 		if (curseur==1)
 		{
 			stage=1;
+			loading_c(&pos);
+			cinematique(&pos,pos.Cinematique,864,"music/op.mp3",ecran);
 			continuer=0;
 		}
 		if (curseur==4)
@@ -797,6 +824,50 @@ void loading(position *pos)
     Uint32 start;
     SDL_Thread *thread = NULL;
     thread = SDL_CreateThread( initialiser,(void*)pos);
+    char path[50];
+    int i,loaded=0;
+    SDL_Surface  *Menu_anime[250],*ecran=NULL;
+
+ 	if (pos->resolution_courante==1)
+	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+	else
+		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+    if (pos->resolution_courante==1)
+    {for (i=0; i<210; i++)
+        {
+            sprintf(path,"images/loading_f/loading animation_%05d.jpg",i);
+            Menu_anime[i]=IMG_Load(path);
+        }}
+    else if (pos->resolution_courante==2)
+    {for (i=0; i<210; i++)
+        {
+            sprintf(path,"images/loading_f2/loading animation_%05d.jpg",i);
+            Menu_anime[i]=IMG_Load(path);
+        }}
+    i=0;
+    while(loaded!=1)
+    {
+        start=SDL_GetTicks();
+        if (i>209)
+        {
+            i=0;
+            loaded++;
+        }
+        SDL_BlitSurface(Menu_anime[i],NULL,ecran,NULL);
+        SDL_Flip(ecran);
+        i++;
+        if (1000/FPS>SDL_GetTicks()-start)
+        SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+    }
+    SDL_WaitThread(thread,NULL);
+    SDL_FreeSurface(ecran);
+}
+void loading_c(position *pos)
+{
+    const int FPS=60;
+    Uint32 start;
+    SDL_Thread *thread = NULL;
+    thread = SDL_CreateThread( initialiser_cinematique,(void*)pos);
     char path[50];
     int i,loaded=0;
     SDL_Surface  *Menu_anime[250],*ecran=NULL;
