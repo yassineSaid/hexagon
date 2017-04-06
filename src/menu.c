@@ -111,9 +111,7 @@ int menu ()
     cinematique(&pos,445,"music/intt.mp3",ecran);
     initialiser_intro(&pos,445,"images/post_intro/p_intro","images/post_intro2/p_intro",ecran);
     cinematique(&pos,118,"music/intt.mp3",ecran);
-	printf("test\n");
 	loading(&pos);
-	printf("test\n");
  	strcpy(pos.smenu,"images/menu2/menu_");
  
     SDL_Init(SDL_INIT_VIDEO);
@@ -869,7 +867,6 @@ int initialiser(void *ptr)
     {
         sprintf(aa,"buttons/button%d.png",i+1);
         a->button[i]=IMG_Load(aa);
-        fprintf(stderr,"button%d.jpg",i+1);
         sprintf(aa,"buttons/button%du.png",i+1);
         a->buttonu[i]=IMG_Load(aa);
     }
