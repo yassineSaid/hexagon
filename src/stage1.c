@@ -5,7 +5,7 @@
 #include <SDL/SDL_ttf.h>
 void stage1()
 {
-	int continuer=1,f=0,s=0;
+	int continuer=1,f=0,s=0,cpt=0,t=0;
 	SDL_Surface *ecran = NULL;
 	SDL_Rect positionFond,camera;
 	background level;
@@ -22,7 +22,17 @@ void stage1()
 		Deplacement_Perso(&per,&f,&s,&camera,level);
 	    scrolling(&per,&camera);
 	    animation(&per);
-		SDL_BlitSurface(level.back,&camera,ecran,&positionFond);
+
+	    cpt++;
+	    if (cpt==5)
+	    {
+	    	cpt=0;
+	    	level.anim++;
+	    if (level.anim>5) 
+	    	level.anim=0;
+	    
+		}
+		SDL_BlitSurface(level.back[level.anim],&camera,ecran,&positionFond);
 		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
 		SDL_Flip(ecran);
 		if (1000/FPS>SDL_GetTicks()-start)
@@ -294,7 +304,8 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 {
 	int i;
 	char im[50];
-	(*per).position.x=9800;
+	char anim_eau[20];
+	(*per).position.x=20;
 	//(*per).position_affichage.x=10;
 	(*per).height=120;
 	(*per).width=22;
@@ -307,8 +318,8 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	strcpy((*per).images,"pablo_testing_imin/pablo_");
 	sprintf(im,"%sstill.png",(*per).images);
 	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
-	(*level).back=IMG_Load("stage1 edit.jpg");
 	(*level).back_col=IMG_Load("stage1_col.png");
+	(*level).anim=0;
 	(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),*level)-147);
 	(*camera).x=6000;
 	(*camera).y=0;
@@ -320,6 +331,11 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	(*in).down=0;
 	(*in).left=0;
 	(*in).right=0;
+	for(i=0;i<6;i++)
+	{
+		sprintf(anim_eau,"images/background/stage1 edit_%05d.jpg",i);
+		level->back[i]=IMG_Load(anim_eau);
+	}
 	for(i=0;i<49;i++)
 	{
 		sprintf(im,"%s%05d.png",(*per).images,i);
@@ -487,4 +503,19 @@ int detec_sol (int x,background a)
 	if (y==0)
 		y=400;
 	return y;
+}
+void black (SDL_Surface *ecran, int trans,int *t)
+{
+	SDL_Rect positionCarre;
+	SDL_Surface *carre=NULL;
+	positionCarre.x=0;
+	positionCarre.y=0;
+	carre = SDL_CreateRGBSurface(SDL_SWSURFACE, 1400, 600, 32, 0, 0, 0, 0);
+	SDL_FillRect(carre, NULL, SDL_MapRGB(ecran->format, 0, 0, 0));
+	if ((*t)<trans)
+	{
+		(*t)+=1;
+		SDL_SetAlpha(carre, SDL_SRCALPHA, trans);
+		SDL_BlitSurface(carre, NULL, ecran, &positionCarre);
+	}
 }

@@ -12,7 +12,8 @@
 #define screen_height 600
 typedef struct 
 {
-	SDL_Surface *back,*back_col;
+	SDL_Surface *back[6],*back_col;
+	int anim;
 }background;
 typedef struct
 {
@@ -69,4 +70,5 @@ int collision_back(perso *dante,background a);
 SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y);
 void animation(perso *per);
 int detec_sol (int x,background a);
+void black (SDL_Surface *ecran, int trans,int *t);
 #endif
