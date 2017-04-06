@@ -8,7 +8,7 @@ typedef struct
 {
 	SDL_Rect positionButton[6], positionButtonu[6], positionMouse[6][2], positionHelp[9], positionVolumeM[20], positionVolumeB[20];
 	SDL_Rect positionTexteSetting[4],positionFond,positionMouseSetting[4][2];
-	SDL_Surface *Menu_anime[200][2],*button[6],*buttonu[6],*intro[450],*Cinematique[864];
+	SDL_Surface *Menu_anime[200][2],*button[6],*buttonu[6],*intro[450],*Cinematique[953];
 	TTF_Font *police;
 	int tailleHelp,tailleSetting,full,anim,resolution_courante,resolution_antecedante;
 	char smenu[12],nom_fichier[20];
