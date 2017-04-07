@@ -310,7 +310,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	int i;
 	char im[50];
 	char anim_eau[20];
-	(*per).position.x=20;
+	(*per).position.x=1500;
 	//(*per).position_affichage.x=10;
 	(*per).height=143;
 	(*per).width=26;
@@ -323,7 +323,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	strcpy((*per).images,"pablo_testing_imin/pablo_");
 	sprintf(im,"%sstill.png",(*per).images);
 	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
-	(*level).back_col=IMG_Load("stage1_col.png");
+	(*level).back_col=IMG_Load("stage1_col.jpg");
 	(*level).anim=0;
 	(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),*level)-147);
 	(*camera).x=6000;
