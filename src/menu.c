@@ -27,6 +27,7 @@ int initialiser_cinematique(void *ptr)
             a->Cinematique[i]=IMG_Load(Image_path);
         }
     }
+    a->loaded=1;
     return 0;
 }
 void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const char chemin_f[], SDL_Surface *ecran)
@@ -113,7 +114,6 @@ void cinematique(position *a,SDL_Surface **intro,int nombre_de_images,const char
 int menu ()
 {
 	SDL_Surface *ecran = NULL;
-	SDL_Thread *thread1;
     position pos;
     SDL_Event event;
     Mix_Music *musique;
@@ -133,12 +133,10 @@ int menu ()
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
 		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-    thread1 = SDL_CreateThread(initialiser_cinematique,(void*)&pos);
 	initialiser_intro(&pos,445,"images/intro/intro_","images/intro2/intro_",ecran);
     cinematique(&pos,pos.intro,445,"music/intt.mp3",ecran);
     initialiser_intro(&pos,445,"images/post_intro/p_intro","images/post_intro2/p_intro",ecran);
     cinematique(&pos,pos.intro,118,"music/intt.mp3",ecran);
-    SDL_WaitThread(thread1,NULL);
 	loading(&pos);
  	strcpy(pos.smenu,"images/menu2/menu_");
     SDL_WM_SetCaption("Brave Wanderer", NULL);
@@ -823,11 +821,11 @@ void loading(position *pos)
     const int FPS=60;
     Uint32 start;
     SDL_Thread *thread = NULL;
-    thread = SDL_CreateThread( initialiser,(void*)pos);
     char path[50];
     int i,loaded=0;
     SDL_Surface  *Menu_anime[250],*ecran=NULL;
-
+    pos->loaded=0;
+    thread = SDL_CreateThread( initialiser,(void*)pos);
  	if (pos->resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
@@ -845,7 +843,7 @@ void loading(position *pos)
             Menu_anime[i]=IMG_Load(path);
         }}
     i=0;
-    while(loaded!=1)
+    while(pos->loaded==0)
     {
         start=SDL_GetTicks();
         if (i>209)
@@ -867,11 +865,12 @@ void loading_c(position *pos)
     const int FPS=60;
     Uint32 start;
     SDL_Thread *thread = NULL;
-    thread = SDL_CreateThread( initialiser_cinematique,(void*)pos);
     char path[50];
     int i,loaded=0;
     SDL_Surface  *Menu_anime[250],*ecran=NULL;
 
+    pos->loaded=0;
+    thread = SDL_CreateThread( initialiser_cinematique,(void*)pos);
  	if (pos->resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
@@ -889,7 +888,7 @@ void loading_c(position *pos)
             Menu_anime[i]=IMG_Load(path);
         }}
     i=0;
-    while(loaded!=1)
+    while(pos->loaded==0)
     {
         start=SDL_GetTicks();
         if (i>209)
@@ -933,6 +932,7 @@ int initialiser(void *ptr)
         sprintf(aa,"buttons/button%du.png",i+1);
         a->buttonu[i]=IMG_Load(aa);
     }
+    a->loaded=1;
     return 0;
 }
 void read_file(position *a)

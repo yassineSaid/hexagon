@@ -10,7 +10,7 @@ typedef struct
 	SDL_Rect positionTexteSetting[4],positionFond,positionMouseSetting[4][2];
 	SDL_Surface *Menu_anime[200][2],*button[6],*buttonu[6],*intro[450],*Cinematique[953];
 	TTF_Font *police;
-	int tailleHelp,tailleSetting,full,anim,resolution_courante,resolution_antecedante;
+	int tailleHelp,tailleSetting,full,anim,resolution_courante,resolution_antecedante,loaded;
 	char smenu[12],nom_fichier[20];
 	FILE *f;
 }position;
