@@ -115,24 +115,36 @@ int menu ()
 {
 	SDL_Surface *ecran = NULL;
     position pos;
+    affichage aff;
     SDL_Event event;
     Mix_Music *musique;
     Mix_Chunk *ding;
     SDL_Color couleurHelp = {247, 199, 134};
     int curseur=1,continuer=1,i,fix=0,ac=1,j,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
-    char policeHelp[]="polices/Cardinal.ttf";
+    char policeHelp[]="polices/Cardinal.ttf",mode[5];
     const int FPS=40;
 	Uint32 start;
 	SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
     sprintf(pos.nom_fichier,"config.txt");
-	read_file(&pos);
+	read_file(&pos,&volb,&volm);
 	pos.resolution_antecedante=pos.resolution_courante;
  	if (pos.resolution_courante==1)
 	    ecran = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	else
 		ecran = SDL_SetVideoMode(1366, 768, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+    Mix_Volume(1,MIX_MAX_VOLUME-(volb*7));
+    if ((volm!=20)&&(volm!=0))
+	{
+		Mix_VolumeMusic(MIX_MAX_VOLUME-(volm*7));
+	}	
+	else if (volm==0)
+	{
+		Mix_VolumeMusic(MIX_MAX_VOLUME);
+	}
+	else
+		Mix_VolumeMusic(0);
 	initialiser_intro(&pos,445,"images/intro/intro_","images/intro2/intro_",ecran);
     cinematique(&pos,pos.intro,445,"music/intt.mp3",ecran);
     initialiser_intro(&pos,445,"images/post_intro/p_intro","images/post_intro2/p_intro",ecran);
@@ -144,7 +156,6 @@ int menu ()
     ding = Mix_LoadWAV("music/ding.wav");
     musique = Mix_LoadMUS("music/musique.mp3");
     Mix_PlayMusic(musique, 2);
-    Mix_Volume(1,MIX_MAX_VOLUME-(volb*7));
     pos.positionFond.x=0;
     pos.positionFond.y=0;
     /*for (i=0; i<=108; i++)
@@ -155,7 +166,7 @@ int menu ()
     while (continuer!=0)
     {
     	start=SDL_GetTicks();
-		if (curseur==0)
+		if (curseur==-1)
 			{curseur=6;ac=6;}
 		if (curseur>6)
 			{curseur=1;ac=1;}
@@ -187,6 +198,10 @@ int menu ()
                 	{
                     case SDLK_UP:
 						curseur--;
+						if (curseur==0)
+						{
+							curseur=-1;
+						}
                     break;
                     case SDLK_DOWN:
 						curseur++;
@@ -298,11 +313,11 @@ int menu ()
     pos.f=fopen("config.txt","w");
     if (pos.resolution_courante==1)
     {
-        fprintf(pos.f,"mode1");
+        fprintf(pos.f,"mode1\n%d\n%d",volb,volm);
     }
     else  if (pos.resolution_courante==2)
     {
-        fprintf(pos.f,"mode2");
+        fprintf(pos.f,"mode2\n%d\n%d",volb,volm);
     }
     Mix_FreeMusic(musique);
     Mix_FreeChunk(ding);
@@ -760,7 +775,7 @@ void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surf
     while (continuer)
     {
         start=SDL_GetTicks();
-    	if ((*p)>107) (*p)=0;
+    	if ((*p)>152) (*p)=0;
 		if (pos->resolution_courante==1)
 	    	SDL_BlitSurface(pos->Menu_anime[(*p)][0],NULL,ecran,&pos->positionFond);
 		else
@@ -935,13 +950,14 @@ int initialiser(void *ptr)
     a->loaded=1;
     return 0;
 }
-void read_file(position *a)
+void read_file(position *a,int *volb,int *volm)
 {
     char mode[10];
+    int b,m;
     a->f=fopen(a->nom_fichier,"r");
     if (a->f!=NULL)
     {
-        fscanf(a->f,"%s",mode);
+        fscanf(a->f,"%s\n%d\n%d",mode,&b,&m);
     }
     if (strcmp(mode,"mode1")==0)
     {
@@ -952,4 +968,6 @@ void read_file(position *a)
         a->resolution_courante=2;
     }
     fclose(a->f);
+    *volb=b;
+    *volm=m;
 }

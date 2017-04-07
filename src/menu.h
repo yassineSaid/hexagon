@@ -14,6 +14,10 @@ typedef struct
 	char smenu[12],nom_fichier[20];
 	FILE *f;
 }position;
+typedef struct 
+{
+	int volm,volb;
+}affichage;
 void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const char chemin_f[], SDL_Surface *ecran);
 int initialiser_cinematique(void *ptr);
 void cinematique(position *a,SDL_Surface **intro,int nombre_de_images,const char *song_name, SDL_Surface *ecran);
@@ -27,5 +31,5 @@ void TxtSetting (SDL_Surface *texteSetting[], SDL_Surface *texteSettingu[], posi
 void loading(position *pos);
 void loading_c(position *pos);
 int initialiser(void *ptr);
-void read_file(position *a);
+void read_file(position *a,int *volb,int *volm);
 #endif
