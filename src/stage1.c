@@ -310,7 +310,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 	int i;
 	char im[50];
 	char anim_eau[20];
-	(*per).position.x=1500;
+	(*per).position.x=130;
 	//(*per).position_affichage.x=10;
 	(*per).height=143;
 	(*per).width=26;
@@ -452,6 +452,8 @@ if ((couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)||(couleur[6].r
 return 5;*/
 if (couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255)
 	col= 2;
+if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)&&(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
+	col= 5;
 if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)&&(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)&&(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
 	col= 1;
 
