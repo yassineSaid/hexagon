@@ -1,7 +1,7 @@
 #ifndef stage1_H_
 #define stage1_H_
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h> 
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 
@@ -10,7 +10,7 @@
 #define level_height 600
 #define screen_width 1366
 #define screen_height 600
-typedef struct 
+typedef struct
 {
 	SDL_Surface *back[6],*back_col,*back1;
 	int anim;
@@ -22,53 +22,71 @@ typedef struct
 	int state,state0,anim,tentatives,inventory,height,width,speed;
 	char name[6],images[50];
 }perso;
-typedef struct 
+typedef struct
+{
+	SDL_Surface *kteb[84];
+	int pause,resume;
+}pause;
+typedef struct
+{
+    SDL_Surface *tableau[201];
+    int affichage_tab,cnt2;
+}tableau;
+typedef struct
+{
+	SDL_Surface *button;
+	SDL_Rect position;
+	int show,n_tab;
+}button;
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int angle,reflection;
 }mirror;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state;
 }socrates;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state;
 }bucket;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state;
 }plant;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state;
 }door1;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state;
 }door2;
-typedef struct 
+typedef struct
 {
 	SDL_Rect position,position_affichage;
 	int state,code;
 }door3;
-typedef struct 
+typedef struct
 {
 	int left,right,up,down;
 }inpu;
 void stage1();
-void input (int *continuer,int *f,int *s,inpu *in);
-void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level);
+void input (int *continuer, int *f,int *s,inpu *in,button butn,tableau *tab,pause *ps);
+void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level,button *butn);
 void scrolling (perso *per, SDL_Rect *camera);
-void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level);
-int collision_back(perso *dante,background a);
+void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps);
+int collision_back(perso *dante,background a,button *butn);
 SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y);
 void animation(perso *per);
 int detec_sol (int x,background a);
 void black (SDL_Surface *ecran, int trans,int *t);
+void animation_tableau(tableau *tab,button *butn,SDL_Surface *ecran);
+void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect positionFond,SDL_Rect camera);
 #endif
