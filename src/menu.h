@@ -22,7 +22,7 @@ void initialiser_intro(position *a,int nombre_images,const char chemin_w[],const
 int initialiser_cinematique(void *ptr);
 void cinematique(position *a,SDL_Surface **intro,int nombre_de_images,const char *song_name, SDL_Surface *ecran);
 int menu();
-void pause();
+//void pause();
 void fullscreen(position *pos);
 void smallscreen(position *pos);
 void help(int tailleHelp, SDL_Color couleurHelp, int *p, position *pos, SDL_Surface *ecran);
