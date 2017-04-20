@@ -1,8 +1,10 @@
 #include "stage1.h"
+#include "menu.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
+#include <SDL/SDL_thread.h>
 void stage1()
 {
     int continuer=1,f=0,s=0,cpt=0,t=0,cnt2=0,cnt3=0;
@@ -295,8 +297,11 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         (*per).state=0;
     }
     else if ((*s)==0)
-        (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
-}
+    	if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<10)
+        	(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
+        else
+        	(*s)=1;
+}	
 void scrolling (perso *per, SDL_Rect *camera)
 {
     camera->x=(per->position.x+(per->width/2))-(screen_width/2);
