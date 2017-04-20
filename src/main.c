@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
     int stage=1;
     //map();
-    stage=menu();
+    //stage=menu();
     if (stage==1)
     {
     	stage1();
