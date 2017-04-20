@@ -17,7 +17,7 @@ void stage1()
     const int FPS=60;
     Uint32 start;
     SDL_Init(SDL_INIT_VIDEO);
-    ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+    ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
     init (&per,&camera,&positionFond,&in,ecran,&level,&butn,&tab,&ps);
     while (continuer!=0)
     {
@@ -597,9 +597,15 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
     SDL_Event event;
     Uint32 start;
     const int FPS=30;
+    int curseur=1;
+    int ok=0;
     while ((ps->pause==1)&&(*continuer==1))
     {
-        fprintf(stderr," ps->pause=%d\n resume=%d\n i=%d\n",ps->pause,ps->resume,*compteur);
+        if (curseur>4)
+        curseur=1;
+        if (curseur<1)
+        curseur=4;
+        fprintf(stderr,"ok=%d\n curseur%d\n",ok,curseur);
         start=SDL_GetTicks();
         SDL_BlitSurface(level.back[level.anim],&camera,ecran,&positionFond);
         SDL_BlitSurface(ps->kteb[*compteur],NULL,ecran,NULL);
@@ -617,12 +623,23 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
                 case SDLK_ESCAPE:
                     ps->resume=1;
                     break;
+                case SDLK_UP:
+                    curseur--;
+                    break;
+                case SDLK_DOWN:
+                curseur++;
+                break;
+                case SDLK_RETURN:
+                ok=1;
+                break;
                 default:
                     break;
                 }
                 break;
             }
         }
+        if ((curseur==4)&&(ok==1))
+        *continuer=0;
         if ((ps->resume)==0)
         {
             (*compteur)++;
@@ -640,6 +657,7 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
                 ps->resume=0;
             }
         }
+        ok=0;
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
