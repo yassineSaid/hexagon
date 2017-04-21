@@ -17,9 +17,9 @@ typedef struct
 }background;
 typedef struct
 {
-	SDL_Rect position,position_affichage;
+	SDL_Rect position,position_affichage,position_jump,position_pre_jump;
 	SDL_Surface *render,*still,*walk_left[49],*walk_right[49],*jump[5],*jump_left[7],*jump_right[7],*sliding[7],*duck[3];
-	int state,state0,anim,tentatives,inventory,height,width,speed;
+	int state,state0,anim,tentatives,inventory,height,width,speed,jm,col_jm,tomb;
 	char name[6],images[50];
 }perso;
 typedef struct
