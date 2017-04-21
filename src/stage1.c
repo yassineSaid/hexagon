@@ -156,7 +156,7 @@ void input (int *continuer, int *f,int *s,inpu *in,button butn,tableau *tab,paus
     }
     if ((space)&&((*s)==0))
     {
-        (*s)=-16;
+        (*s)=1;
     }
     if ((*f==10)&&(butn.show==1))
         tab->affichage_tab=1;
@@ -170,11 +170,11 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
     per_0=(*per);
     (*per).state=0;
     f=(*l);
-    if ((*s)!=0)
-        (*per).speed=6;
+    if (((*s)!=0)&&(per->col_jm==1))
+        (*per).speed=2;
     else
         (*per).speed=5;
-    if ((*s)<=-1)
+    /*if ((*s)<=-1)
     {
         if ((*s)<=-3)
         {
@@ -202,6 +202,48 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             (*s)=0;
             (*per).position.y=detec_sol(per->position.x + per->render->w-87,level)-147;
         }
+    }*/
+    if ((*s)==1)
+    {
+    	if (per->jm!=1)
+    	{	
+    		per->position_pre_jump.x=per->position.x;
+    		per->position_pre_jump.y=per->position.y;
+    		per->position_jump.x=-80;
+    		if (per->tomb==1)
+    			per->position_jump.x=0;
+    	    per->position_jump.y=0;
+    	    per->jm=1;
+    	}
+    	if (per->position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
+    	{
+    	 	(*s)=0;
+    	   	per->jm=0;
+        	per->position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2));
+    		per->col_jm=0;
+    		per->tomb=0;
+    	}
+    	else if (per->tomb==1)
+    	{
+    	    per->position_jump.x+=per->speed;
+    		(*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x));
+    	    per->position.y=per->position_pre_jump.y-per->position_jump.y;
+    	}
+    	else if ((collision_back(per,level,butn)==4)&&(per->col_jm==0))
+    	{	
+    		per->position_jump.x=-per->position_jump.x;
+    		(*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
+    	    per->position.y=per->position_pre_jump.y-per->position_jump.y;
+    	    per->col_jm=1;
+    	    per->position_jump.x+=per->speed;
+    	}
+    	else
+    	    {
+    	    	per->position_jump.x+=per->speed;
+    			(*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
+    	    	per->position.y=per->position_pre_jump.y-per->position_jump.y;
+    	    }
+    	printf("%d     %d\n",(*per).position_jump.x,(*per).position_jump.y);
     }
     if (f==1)
     {
@@ -299,8 +341,13 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
     else if ((*s)==0)
     	if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<10)
         	(*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
-        else
-        	(*s)=1;
+        else if (per->tomb==0)
+        {	
+    	    per->jm=0;
+    	    per->col_jm=0;
+    	    per->tomb=1;
+    	    (*s)=1;
+    	}	
 }	
 void scrolling (perso *per, SDL_Rect *camera)
 {
@@ -329,12 +376,15 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
 {
     int i;
     char im[50];
-    (*per).position.x=130;
+    (*per).position.x=6000;
     //(*per).position_affichage.x=10;
-    (*per).height=143;
+    (*per).height=144;
     (*per).width=26;
     (*per).state=0;
     (*per).state0=1;
+    (*per).jm=0;
+    (*per).col_jm=0;
+    (*per).tomb=0;
     (*per).anim=0;
     (*per).inventory=0;
     (*per).speed=5;
@@ -447,7 +497,7 @@ int collision_back(perso *dante,background a,button *butn)
     point[1].y=dante->position.y + dante->render->h;
 
     point[3].x=dante->position.x + dante->render->w/2; //CENTRE HAUT
-    point[3].y=dante->position.y;
+    point[3].y=dante->position.y + ((dante->render->h-dante->height)/2);
 
     point[6].x=dante->position.x + dante->render->w/2 - dante->width/2; //HAUT GAUCHE
     point[6].y=dante->position.y + dante->render->h/4;
@@ -610,7 +660,7 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
         curseur=1;
         if (curseur<1)
         curseur=4;
-        fprintf(stderr,"ok=%d\n curseur%d\n",ok,curseur);
+        //fprintf(stderr,"ok=%d\n curseur%d\n",ok,curseur);
         start=SDL_GetTicks();
         SDL_BlitSurface(level.back[level.anim],&camera,ecran,&positionFond);
         SDL_BlitSurface(ps->kteb[*compteur],NULL,ecran,NULL);
@@ -669,3 +719,4 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
     *compteur=0;
 
 }
+
