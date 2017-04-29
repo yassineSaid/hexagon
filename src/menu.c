@@ -138,7 +138,7 @@ int menu ()
     if ((volm!=20)&&(volm!=0))
 	{
 		Mix_VolumeMusic(MIX_MAX_VOLUME-(volm*7));
-	}	
+	}
 	else if (volm==0)
 	{
 		Mix_VolumeMusic(MIX_MAX_VOLUME);
@@ -570,7 +570,7 @@ void setting (int *volm, int *volb, position *pos, SDL_Surface *ecran, Mix_Chunk
     	SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
 	}
 }
-void pause()
+/*void pause()
 {
     int continuer = 1;
     SDL_Event event;
@@ -594,7 +594,7 @@ void pause()
         break;
         }
     }
-}
+}*/
 void fullscreen(position *pos)
 {
 	int i,j;
