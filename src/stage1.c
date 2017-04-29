@@ -34,7 +34,7 @@ void stage1()
         animation(&per,&cpt_perso);
         check_changement(&f,&per,&butn,&ps,&ind,&door);
         affichage_background(&level,ecran,camera);
-        Affichage_objet(&ind,&camera,ecran,&per,&door,&ps);
+        Affichage_objet(&ind,&camera,ecran,&per,&door,&ps,&mirro);
         SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
         blit_button(&butn,ecran);
         animation_tableau(&per,&tab,&butn,ecran);
@@ -52,7 +52,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     int i,j;
     char im[50];
     level->cpt=0;
-    (*per).position.x=130;
+    (*per).position.x=4800;
     //(*per).position_affichage.x=10;
     (*per).height=90;
     (*per).width=40;
@@ -1095,7 +1095,7 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
     *compteur=0;
     }
 }
-void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps)
+void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps,mirror *mirro)
 {
     int i=0,cnt=0,cnt_delay=0;
     SDL_Event event;
@@ -1111,6 +1111,11 @@ void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per
     {
         door->position_affichage[i].x=(door->position[i].x)-(*camera).x;
         door->position_affichage[i].y=(door->position[i].y)-(*camera).y;
+    }
+    for (i=0; i<2; i++)
+    {
+        mirro->position_affichage[i].x=(mirro->position[i].x)-(*camera).x;
+        mirro->position_affichage[i].y=(mirro->position[i].y)-(*camera).y;
     }
     //printf("x=%d\ny=%d\n",ind->positiononscreen[0].x,ind->positiononscreen[0].y);
     //fprintf(stderr,"%d\n",ps->inv.pickedobject);

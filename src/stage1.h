@@ -57,14 +57,14 @@ typedef struct
 }doors;
 typedef struct
 {
-	SDL_Surface *mir, *soc;
 	SDL_Surface *button[2];
-	SDL_Rect position[2],position_affichage[2];
+	SDL_Rect position,position_affichage;
 	int show,n_tab,cnt_blit;
 }button;
 typedef struct
 {
-	SDL_Rect position,position_affichage;
+	SDL_Surface *mir, *soc;
+	SDL_Rect position[2],position_affichage[2];
 	int angle,reflection;
 }mirror;
 typedef struct
@@ -113,7 +113,7 @@ int detec_sol (int x,background a);
 void black (SDL_Surface *ecran, int trans,int *t);
 void animation_tableau(perso *per,tableau *tab,button *butn,SDL_Surface *ecran);
 void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect positionFond,SDL_Rect camera);
-void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps);
+void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps,mirror *mirro);
 void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,doors *door);
 void blit_button(button *butn,SDL_Surface *ecran);
 void affichage_background(background *level,SDL_Surface *ecran,SDL_Rect camera);
