@@ -80,7 +80,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     mirro->soc=IMG_Load("components/support.png");
     mirro->position[0].x=4950;
     mirro->position[1].x=4950;
-    mirro->position[0].y=detec_sol(mirro->position[0].x,*level)-120;
+    mirro->position[0].y=detec_sol(mirro->position[0].x,*level)-110;
     mirro->position[1].y=500;
     butn->cnt_blit=0;
     butn->n_tab=0;
@@ -166,7 +166,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     }
     for(i=0; i<6; i++)
     {
-        sprintf(im,"images/background/stage1 edit_%05d.jpg",i);
+        sprintf(im,"stage1-edit.jpg");
         level->back[i]=IMG_Load(im);
     }
     for(i=0; i<6; i++)
@@ -1102,8 +1102,6 @@ void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per
     SDL_Rect position_papier_open;
     position_papier_open.x=400;
     position_papier_open.y=100;
-    SDL_BlitSurface(mirro->soc,NULL,ecran,&mirro->position_affichage[0]);
-    SDL_BlitSurface(mirro->mir,NULL,ecran,&mirro->position_affichage[1]);
     for (i=0; i<2; i++)
     {
         ind->positiononscreen[i].x=(ind->positionindices[i].x)-(*camera).x;
@@ -1196,6 +1194,9 @@ void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per
             //fprintf(stderr,"%d",door->cnt[i]);
         }
     }
+    
+    SDL_BlitSurface(mirro->soc,NULL,ecran,&mirro->position_affichage[0]);
+    SDL_BlitSurface(mirro->mir,NULL,ecran,&mirro->position_affichage[1]);
     if (ind->taken[0]==0)
         SDL_BlitSurface(ind->papier,NULL,ecran,&ind->positiononscreen[0]);
     if (ind->taken[1]==0)
