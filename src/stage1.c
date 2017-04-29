@@ -64,7 +64,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     (*per).render=IMG_Load("images/personage_idl_imin/1.png");
     (*level).back_col=IMG_Load("stage1_col.jpg");
     (*level).anim=0;
-    (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),*level)-147);
+    (*per).position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),*level)-(per->render->h-((per->render->h-per->height)/2));
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
@@ -443,9 +443,9 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
     (*per).state=0;
     f=(*l);
     if ((*s)!=0)
-        (*per).speed=10;
+        (*per).speed=5;
     else
-        (*per).speed=11;
+        (*per).speed=6;
     /*if ((*s)<=-1)
     {
         if ((*s)<=-3)
