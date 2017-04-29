@@ -18,12 +18,13 @@ void stage1()
     pause ps;
     indices ind;
     doors door;
+    mirror mirro;
     const int FPS=60;
     Uint32 start;
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
-    init (&per,&camera,&positionFond,&in,ecran,&level,&butn,&tab,&ps,&ind,&door);
+    init (&per,&camera,&positionFond,&in,ecran,&level,&butn,&tab,&ps,&ind,&door,&mirro);
     while (continuer!=0)
     {
         start=SDL_GetTicks();
@@ -46,7 +47,7 @@ void stage1()
     SDL_Quit();
 
 }
-void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door)
+void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door,mirror *mirro)
 {
     int i,j;
     char im[50];
@@ -75,6 +76,12 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     (*in).down=0;
     (*in).left=0;
     (*in).right=0;
+    mirro->mir=IMG_Load("components/mirror.png");
+    mirro->soc=IMG_Load("components/support.png");
+    mirro->position[0].x=4950;
+    mirro->position[1].x=4950;
+    mirro->position[0].y=500;
+    mirro->position[1].y=500;
     butn->cnt_blit=0;
     butn->n_tab=0;
     butn->position.x=1200;

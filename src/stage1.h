@@ -57,8 +57,9 @@ typedef struct
 }doors;
 typedef struct
 {
+	SDL_Surface *mir, *soc;
 	SDL_Surface *button[2];
-	SDL_Rect position;
+	SDL_Rect position[2],position_affichage[2];
 	int show,n_tab,cnt_blit;
 }button;
 typedef struct
@@ -104,7 +105,7 @@ void stage1();
 void input (int *continuer, int *f,int *s,inpu *in);
 void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level);
 void scrolling (perso *per, SDL_Rect *camera);
-void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door);
+void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door,mirror *mirro);
 int collision_back(perso *dante,background a);
 SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y);
 void animation(perso *per,int *cpt_perso);
