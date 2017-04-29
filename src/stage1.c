@@ -616,12 +616,15 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         per->jumping=0;
     }
     else if ((*s)==0)
-    {
         if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<10)
             (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
-        else
+        else if (per->tomb==0)
+        {   
+            per->jm=0;
+            per->col_jm=0;
+            per->tomb=1;
             (*s)=1;
-    }
+        }   
 }
 void scrolling (perso *per, SDL_Rect *camera)
 {
