@@ -80,7 +80,7 @@ void init (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surfa
     mirro->soc=IMG_Load("components/support.png");
     mirro->position[0].x=4950;
     mirro->position[1].x=4950;
-    mirro->position[0].y=500;
+    mirro->position[0].y=detec_sol(mirro->position[0].x,*level)-120;
     mirro->position[1].y=500;
     butn->cnt_blit=0;
     butn->n_tab=0;
@@ -623,7 +623,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         per->jumping=0;
     }
     else if ((*s)==0)
-        if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<10)
+        if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<20)
             (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
         else if (per->tomb==0)
         {   
@@ -1102,6 +1102,8 @@ void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per
     SDL_Rect position_papier_open;
     position_papier_open.x=400;
     position_papier_open.y=100;
+    SDL_BlitSurface(mirro->soc,NULL,ecran,&mirro->position_affichage[0]);
+    SDL_BlitSurface(mirro->mir,NULL,ecran,&mirro->position_affichage[1]);
     for (i=0; i<2; i++)
     {
         ind->positiononscreen[i].x=(ind->positionindices[i].x)-(*camera).x;
