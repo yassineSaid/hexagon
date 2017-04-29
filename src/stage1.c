@@ -287,7 +287,7 @@ void input (int *continuer, int *f,int *s,inpu *in)
     {
         if (((*in).up)&&((*s)==0))
         {
-            (*s)=-19;
+            (*s)=1;
             (*f)=5;
         }
         else if ((*in).down)
@@ -299,7 +299,7 @@ void input (int *continuer, int *f,int *s,inpu *in)
     {
         if (((*in).up)&&((*s)==0))
         {
-            (*s)=-19;
+            (*s)=1;
             (*f)=6;
         }
         else if ((*in).down)
@@ -316,7 +316,7 @@ void input (int *continuer, int *f,int *s,inpu *in)
     else if (((*in).up)&&((*s)==0))
     {
         (*f)=3;
-        (*s)=-19;
+        (*s)=1;
     }
     /*
     else if ((*in).down)
@@ -446,7 +446,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         (*per).speed=10;
     else
         (*per).speed=11;
-    if ((*s)<=-1)
+    /*if ((*s)<=-1)
     {
         if ((*s)<=-3)
         {
@@ -474,8 +474,50 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             (*s)=0;
             (*per).position.y=detec_sol(per->position.x + per->render->w-20,level);
         }
-    }
+    }*/
     //fprintf(stderr,"%d\n",f);
+    if ((*s)==1)
+    {
+        if (per->jm!=1)
+        {   
+            per->position_pre_jump.x=per->position.x;
+            per->position_pre_jump.y=per->position.y;
+            per->position_jump.x=-80;
+            if (per->tomb==1)
+                per->position_jump.x=0;
+            per->position_jump.y=0;
+            per->jm=1;
+        }
+        if (per->position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
+        {
+            (*s)=0;
+            per->jm=0;
+            per->position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2));
+            per->col_jm=0;
+            per->tomb=0;
+        }
+        else if (per->tomb==1)
+        {
+            per->position_jump.x+=per->speed;
+            (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x));
+            per->position.y=per->position_pre_jump.y-per->position_jump.y;
+        }
+        else if ((collision_back(per,level)==4)&&(per->col_jm==0))
+        {   
+            per->position_jump.x=-per->position_jump.x;
+            (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
+            per->position.y=per->position_pre_jump.y-per->position_jump.y;
+            per->col_jm=1;
+            per->position_jump.x+=per->speed;
+        }
+        else
+            {
+                per->position_jump.x+=per->speed;
+                (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
+                per->position.y=per->position_pre_jump.y-per->position_jump.y;
+            }
+        printf("%d     %d\n",(*per).position_jump.x,(*per).position_jump.y);
+    }
     if (f==1)
     {
         if ((*per).position.x<(level_width-per->render->w))
