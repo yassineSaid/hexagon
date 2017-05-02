@@ -1,0 +1,131 @@
+# depslib dependency file v1.0
+1493309622 source:/home/gogetsu/Desktop/game/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	"menu.c"
+	"stage1.c"
+	"map.h"
+
+1493149560 /home/gogetsu/Desktop/game/menu.c
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1491818505 /home/gogetsu/Desktop/game/menu.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+
+1493462298 /home/gogetsu/Desktop/game/stage1.c
+	"stage1.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1493460471 /home/gogetsu/Desktop/game/stage1.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+
+1493149560 source:/home/gogetsu/Desktop/game/menu.c
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1493462232 source:/home/gogetsu/Desktop/game/stage1.c
+	"stage1.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1491522881 /home/gogetsu/Desktop/game/map.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	"stage1.h"
+
+1493679250 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	"menu.c"
+	"stage1.c"
+	"map.h"
+
+1493149560 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1491818505 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+
+1493723998 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
+	"stage1.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+	<SDL/SDL_rotozoom.h>
+
+1493720616 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+
+1491522881 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	"stage1.h"
+
+1493149560 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+
+1493723998 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
+	"stage1.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+	<SDL/SDL_rotozoom.h>
+
