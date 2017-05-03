@@ -41,10 +41,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="menu.h" />
-		<Unit filename="stage1.c">
+		<Unit filename="stage1.h" />
+		<Unit filename="stages.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="stage1.h" />
+		<Unit filename="stages.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

@@ -5,7 +5,7 @@
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 #include "menu.c"
-#include "stage1.c"
+#include "stages.c"
 #include "map.h"
 int main(int argc, char *argv[])
 {
@@ -15,6 +15,10 @@ int main(int argc, char *argv[])
     if (stage==1)
     {
     	stage1();
+    }
+    else if (stage==2)
+    {
+        stage2();
     }
     return 0;
 }

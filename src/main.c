@@ -5,7 +5,7 @@
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 #include "menu.h"
-#include "stage1.h"
+#include "stages.h"
 #include "map.h"
 int main(int argc, char *argv[])
 {
