@@ -1,10 +1,10 @@
 #ifndef map_H_
 #define map_H_
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h> 
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
-#include "stage1.h"
+#include "stages.h"
 
 
 #define map_width 6000

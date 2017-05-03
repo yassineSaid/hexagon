@@ -63,7 +63,7 @@
 	<SDL/SDL_ttf.h>
 	"stage1.h"
 
-1493679250 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/main.cpp
+1493810989 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/main.cpp
 	<stdlib.h>
 	<stdio.h>
 	<SDL/SDL.h>
@@ -71,7 +71,7 @@
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 	"menu.c"
-	"stage1.c"
+	"stages.c"
 	"map.h"
 
 1493149560 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
@@ -88,7 +88,7 @@
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 
-1493723998 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
+1493807073 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
 	"stage1.h"
 	"menu.h"
 	<SDL/SDL.h>
@@ -98,18 +98,18 @@
 	<SDL/SDL_thread.h>
 	<SDL/SDL_rotozoom.h>
 
-1493720616 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.h
+1493804711 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 
-1491522881 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.h
+1493807527 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
-	"stage1.h"
+	"stages.h"
 
 1493149560 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
 	"menu.h"
@@ -119,8 +119,34 @@
 	<SDL/SDL_ttf.h>
 	<SDL/SDL_thread.h>
 
-1493723998 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
+1493807073 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stage1.c
 	"stage1.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+	<SDL/SDL_rotozoom.h>
+
+1493811042 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
+	"stages.h"
+	"menu.h"
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+	<SDL/SDL_thread.h>
+	<SDL/SDL_rotozoom.h>
+
+1493810287 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.h
+	<SDL/SDL.h>
+	<SDL/SDL_image.h>
+	<SDL/SDL_mixer.h>
+	<SDL/SDL_ttf.h>
+
+1493811042 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
+	"stages.h"
 	"menu.h"
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
