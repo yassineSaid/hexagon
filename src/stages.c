@@ -43,6 +43,7 @@ void stage2()
 
         }
         pause_menu(&ps,ecran,&continuer,&cnt3,level,camera,&manette);
+         //fprintf(stderr,"%d\n",per.position.x);
         SDL_Flip(ecran);
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
@@ -110,7 +111,7 @@ void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran)
     {
     SDL_BlitSurface(mob->cerebus_isar[mob->compteur_enemie],NULL,ecran,&mob->position_affichage);
     }
-    fprintf(stderr,"%d\n",mob->cnt_blit);
+    //fprintf(stderr,"%d\n",mob->cnt_blit);
     mob->cnt_blit++;
 }
 void init_background2(background *level)
@@ -138,7 +139,8 @@ void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,backgro
     initialitation_mob(mob2);
     init_buttons(butn,butn1);
     init_pause_menu(ps);
-    per->position.y=500;
+    per->position.y=215;
+    per->position.x=470;
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
@@ -193,7 +195,7 @@ int stage1()
         bruler_porte(&lum,&door,ecran);
         lock(&per,ecran,level,camera,&lo);
         door.state[2]=lo.state;
-        fprintf(stderr,"%d\n",per.position.x);
+        //fprintf(stderr,"%d\n",per.position.x);
         if (per.position.x>9900)
         {
             return 2;
@@ -352,6 +354,8 @@ void init_pause_menu(pause *ps)
     ps->inv.position_objects[1].y=210;
     ps->inv.position_objects[2].x=745;
     ps->inv.position_objects[2].y=210;
+    ps->inv.position_objects[3].x=675;
+    ps->inv.position_objects[3].y=250;
     ps->inv.selected=-1;
     ps->inv.use=0;
     for(i=0; i<=83; i++)
@@ -406,8 +410,8 @@ void init_portes(doors *door,locks *lo)
     door->position[0].y=285;
     door->position[1].x=6356;
     door->position[1].y=200;
-    door->position[2].x=9800;
-    door->position[2].y=300;
+    door->position[2].x=9850;
+    door->position[2].y=280;
     door->ndoor=0;
     door->burning_cnt=0;
     for (i=0; i<3; i++)
@@ -429,9 +433,9 @@ void init_portes(doors *door,locks *lo)
             sprintf(im,"components/beb_nar_%d.png",i+1);
             door->door_A[1][i]=IMG_Load(im);
         }
-    for(i=0; i<=3; i++)
+    for(i=0; i<=1; i++)
         {
-            sprintf(im,"components/beb_nar_%d.png",i+1);
+            sprintf(im,"components/final_door%d.png",i+1);
             door->door_A[2][i]=IMG_Load(im);
         }
 }
@@ -1674,7 +1678,7 @@ void blit_door_in_both_states(doors *door,perso *per,SDL_Rect *camera,SDL_Surfac
             lo->interacted=1;
         }
     }
-    for (i=0; i<3; i++)
+    for (i=0; i<2; i++)
     {
         if (door->state[i]==0)
             SDL_BlitSurface(door->door_A[i][0],NULL,ecran,&door->position_affichage[i]);
@@ -1692,6 +1696,10 @@ void blit_door_in_both_states(doors *door,perso *per,SDL_Rect *camera,SDL_Surfac
             door->cnt_delay++;
         }
     }
+    if (door->state[2]==0)
+            SDL_BlitSurface(door->door_A[2][0],NULL,ecran,&door->position_affichage[i]);
+        else if (door->state[2]==1)
+            SDL_BlitSurface(door->door_A[2][1],NULL,ecran,&door->position_affichage[i]);
 }
 void blit_paper(indices *ind,pause *ps,SDL_Surface *ecran,SDL_Rect *camera,perso *per)
 {
@@ -1773,6 +1781,7 @@ void blit_key(keys *key,SDL_Rect *camera,plant *pl,perso *per,pause *ps,SDL_Surf
 {
     key->position_affichage.x=(key->position.x)-(*camera).x;
     key->position_affichage.y=(key->position.y)-(*camera).y;
+    fprintf(stderr,"%d\n",pl->cnt);
     if (per->interacted==1)
     {
         if (key->n_key==1)
@@ -1784,10 +1793,12 @@ void blit_key(keys *key,SDL_Rect *camera,plant *pl,perso *per,pause *ps,SDL_Surf
     else ps->inv.pickedobject=0;
     if (pl->state==1)
     {
-
+        if (pl->cnt==64)
+        {
         if (key->picked==0)
             {SDL_BlitSurface(key->key,NULL,ecran,&key->position_affichage);
-             fprintf(stderr,"%d\n",pl->state);}
+             }
+             }
     }
     if (key->picked==1)
     {

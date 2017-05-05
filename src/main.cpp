@@ -9,9 +9,9 @@
 #include "map.c"
 int main(int argc, char *argv[])
 {
-    int stage=1;
-    map1();
+    int stage=2;
     //stage=menu();
+    //map1();
     if (stage==1)
     {
     	stage=stage1();
