@@ -1,10 +1,10 @@
 #include "map.h"
-#include "stage1.h"
+//#include "stages.h"
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h> 
+#include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
-void map()
+void map1()
 {
 	int continuer=1,x=0,y=0,f=0,m=0,s=0;
 	SDL_Surface *ecran = NULL,*fond = NULL;
@@ -14,8 +14,8 @@ void map()
 	perso per;
 	inpu in;
 	SDL_Init(SDL_INIT_VIDEO);
-	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-    
+	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+
 	init1 (&per,&camera,&positionFond,&in,ecran,&level);
 	SDL_BlitSurface(level.back_col,&camera,ecran,&positionFond);
 	SDL_BlitSurface(level.back1,&camera,ecran,&positionFond);
@@ -35,7 +35,7 @@ void map()
     }
     SDL_FreeSurface(ecran);
     SDL_Quit();
- 
+
 }
 void input1 (int *continuer, int *f,int *s,inpu *in)
 {
@@ -54,19 +54,19 @@ void input1 (int *continuer, int *f,int *s,inpu *in)
 		            	case SDLK_ESCAPE:
 							(*continuer)=0;
 						break;
-		                case SDLK_RIGHT: 
+		                case SDLK_RIGHT:
 							(*in).right=1;
 						break;
-		                case SDLK_LEFT: 
+		                case SDLK_LEFT:
 							(*in).left=1;
 						break;
-		                case SDLK_UP: 
+		                case SDLK_UP:
 							(*in).up=1;
 						break;
-		                case SDLK_DOWN: 
+		                case SDLK_DOWN:
 							(*in).down=1;
 						break;
-		                case SDLK_SPACE: 
+		                case SDLK_SPACE:
 							space=1;
 						break;
 					}
@@ -74,16 +74,16 @@ void input1 (int *continuer, int *f,int *s,inpu *in)
 				case SDL_KEYUP:
 				switch(event.key.keysym.sym)
 					{
-						case SDLK_RIGHT: 
+						case SDLK_RIGHT:
 							(*in).right=0;
 						break;
-		                case SDLK_LEFT: 
+		                case SDLK_LEFT:
 							(*in).left=0;
 						break;
-		                case SDLK_UP: 
+		                case SDLK_UP:
 							(*in).up=0;
 						break;
-		                case SDLK_DOWN: 
+		                case SDLK_DOWN:
 							(*in).down=0;
 						break;
 						break;
@@ -150,7 +150,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 		(*per).speed=5;
 	if ((*s)<=-1)
 	{
-		if ((*s)<=-3)	
+		if ((*s)<=-3)
 		{
 			(*per).position.y+=(*s);
 			(*s)+=2;
@@ -197,6 +197,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 		{
 			m=1;
 			(*per).position.y-=(*per).speed;
+			(*per).state=3;
 		}
 	}
 	else if (f==4)
@@ -205,6 +206,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 		{
 			m=1;
 			(*per).position.y+=(*per).speed;
+			(*per).state=4;
 		}
 	}
 	else if (f==5)
@@ -276,7 +278,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 		(*per).state=0;
 		(*l)=0;
 	}
-	//else if ((*s)==0) 
+	//else if ((*s)==0)
 		//(*per).position.y=detec_sol((per->position.x + per->render->w/2 + per->width/2),level)-147;
 	return m;
 }
@@ -307,8 +309,8 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 {
 	int i;
 	char im[50];
-	(*per).position.x=3000;
-	(*per).position.y=3000;
+	(*per).position.x=500;
+	(*per).position.y=500;
 	//(*per).position_affichage.x=10;
 	(*per).height=120;
 	(*per).width=22;
@@ -321,8 +323,8 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 	strcpy((*per).images,"pablo_testing_imin/pablo_");
 	sprintf(im,"%sstill.png",(*per).images);
 	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
-	(*level).back1=IMG_Load("Map.jpg");
-	(*level).back_col=IMG_Load("Map_col.jpg");
+	(*level).back1=IMG_Load("polices/Map.jpg");
+	(*level).back_col=IMG_Load("polices/Map_col.jpg");
 	(*camera).x=6000;
 	(*camera).y=0;
 	(*camera).h=600;
@@ -333,13 +335,13 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 	(*in).down=0;
 	(*in).left=0;
 	(*in).right=0;
-	for(i=0;i<49;i++)
+	for(i=0;i<8;i++)
 	{
 		sprintf(im,"%s%05d.png",(*per).images,i);
 		(*per).walk_right[i]=IMG_Load(im);
 	}
 	strcpy((*per).images,"pablo_testing_isar/pablo_");
-	for(i=0;i<49;i++)
+	for(i=0;i<8;i++)
 	{
 		sprintf(im,"%s%05d.png",(*per).images,i);
 		(*per).walk_left[i]=IMG_Load(im);
@@ -416,7 +418,7 @@ couleur[5]=GetPixel (a.back_col, point[5].x, point[5].y);
 couleur[6]=GetPixel (a.back_col, point[6].x, point[6].y);
 couleur[7]=GetPixel (a.back_col, point[7].x, point[7].y);
 
-  
+
 /*if (couleur[0].r!=255 || couleur[0].g!=255 || couleur[0].b!=255)
 return 10;
 
@@ -466,8 +468,8 @@ void animation1(perso *per)
 		if ((*per).state0==2)
 			(*per).render=(*per).walk_left[(*per).anim];
 	}
-	if ((*per).anim>48)
+	if ((*per).anim>7)
 	{
-		(*per).anim=10;
+		(*per).anim=0;
 	}
 }

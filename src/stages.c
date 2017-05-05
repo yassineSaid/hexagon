@@ -8,7 +8,9 @@
 #include <SDL/SDL_rotozoom.h>
 void stage2()
 {
-    int continuer=1,f=0,s=0,cpt_perso=0,cnt3=0;
+    int continuer=1,f=0,s=0,cpt_perso=0,cnt3=0,manette=0;
+    int level_height=1200;
+    char d[3];
     SDL_Surface *ecran = NULL;
     SDL_Rect camera;
     background level;
@@ -16,27 +18,31 @@ void stage2()
     inpu in;
     button butn,butn1;
     pause ps;
+    enemie mob,mob2;
     const int FPS=60;
     Uint32 start;
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
-    init_stage2(&per,&camera,&in,ecran,&level,&butn,&ps,&butn1);
+    init_stage2(&per,&camera,&in,ecran,&level,&butn,&ps,&butn1,&mob,&mob2);
+    mob2.position.x=3100;
     while (continuer!=0)
     {
         start=SDL_GetTicks();
-        input(&continuer,&f,&s,&in);
-        Deplacement_Perso(&per,&f,&s,&camera,level);
-        scrolling(&per,&camera);
+        input(&continuer,&f,&s,&in,&manette,d);
+        Deplacement_Perso(&per,&f,&s,&camera,level,&level_height);
+        scrolling(&per,&camera,&level_height);
         animation(&per,&cpt_perso);
         affichage_background(&level,ecran,camera);
+        mob_yitharek(&mob,&camera,ecran);
+        mob_yitharek(&mob2,&camera,ecran);
         SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
         if (f==11)
         {
         ps.pause=1;
 
         }
-        pause_menu(&ps,ecran,&continuer,&cnt3,level,camera);
+        pause_menu(&ps,ecran,&continuer,&cnt3,level,camera,&manette);
         SDL_Flip(ecran);
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
@@ -44,6 +50,68 @@ void stage2()
     SDL_FreeSurface(ecran);
     SDL_Quit();
 
+}
+void initialitation_mob(enemie *mob)
+{
+    char path[40];
+    int i=0;
+    mob->position.x=3500;
+    mob->position.y=1000;
+    mob->cnt_blit=0;
+    mob->compteur_enemie=0;
+    mob->etat=1;
+    for (i=0; i<6; i++)
+    {
+        sprintf(path,"images/cerebus_imin/cerebus%d.png",i);
+        mob->cerebus_imin[i]=IMG_Load(path);
+    }
+    for (i=0; i<6; i++)
+    {
+        sprintf(path,"images/cerebus_isar/cerebus%d.png",i);
+        mob->cerebus_isar[i]=IMG_Load(path);
+    }
+}
+void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran)
+{
+    mob->position_affichage.x=(mob->position.x)-(*camera).x;
+    mob->position_affichage.y=(mob->position.y)-(*camera).y;
+     if (mob->cnt_blit==5)
+        mob->compteur_enemie++;
+    if (mob->cnt_blit>5)
+    {
+        mob->cnt_blit=0;
+    }
+    if (mob->compteur_enemie>5)
+    {
+        mob->compteur_enemie=0;
+    }
+    if (mob->position.x==4000)
+    {
+        mob->etat=2;
+    }
+    else if (mob->position.x==3000)
+    {
+        mob->etat=1;
+    }
+    if (mob->etat==1)
+    {
+        (mob->position.x)+=1;
+    }
+    else if (mob->etat==2)
+    {
+        (mob->position.x)-=1;
+    }
+
+    if (mob->etat==1)
+    {
+    SDL_BlitSurface(mob->cerebus_imin[mob->compteur_enemie],NULL,ecran,&mob->position_affichage);
+    }
+    else if (mob->etat==2)
+    {
+    SDL_BlitSurface(mob->cerebus_isar[mob->compteur_enemie],NULL,ecran,&mob->position_affichage);
+    }
+    fprintf(stderr,"%d\n",mob->cnt_blit);
+    mob->cnt_blit++;
 }
 void init_background2(background *level)
 {
@@ -54,20 +122,23 @@ void init_background2(background *level)
         sprintf(im,"images/stage2/stage55_%05d.jpg",i);
         level->back[i]=IMG_Load(im);
     }
-    (*level).back_col=IMG_Load("stage_collision2.jpg");
+    (*level).back_col=IMG_Load("stage55_00000.jpg");
     (*level).anim=0;
     level->cpt=0;
 
 }
-void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1)
+void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2)
 {
     int i,j;
     char im[50];
     init_background2(level);
     init_input(in);
     init_perso(per);
+    initialitation_mob(mob);
+    initialitation_mob(mob2);
     init_buttons(butn,butn1);
     init_pause_menu(ps);
+    per->position.y=500;
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
@@ -76,9 +147,11 @@ void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,backgro
 //////////////////////////////////////////////////
 //////////////////////////////////////////////////
 /////////////////////////////////////////////////
-void stage1()
+int stage1()
 {
-    int continuer=1,f=0,s=0,cpt_perso=0,cnt3=0;
+    int a,continuer=1,f=0,s=0,cpt_perso=0,cnt3=0,manette=0;
+    int level_height=600;
+    char d[3];
     SDL_Surface *ecran = NULL;
     SDL_Rect camera;
     background level;
@@ -99,26 +172,33 @@ void stage1()
     Uint32 start;
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
-    ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+    ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
     init_stage1(&per,&camera,&in,ecran,&level,&butn,&tab,&ps,&ind,&door,&mirro,&buck,&key,&pl,&lum,&butn1,&lo);
     while (continuer!=0)
     {
         start=SDL_GetTicks();
-        input(&continuer,&f,&s,&in);
+        input(&continuer,&f,&s,&in,&manette,d);
+        a=arduinoWriteData(per.tentatives);
         collision_doors(&per,&door);
-        Deplacement_Perso(&per,&f,&s,&camera,level);
-        scrolling(&per,&camera);
+        Deplacement_Perso(&per,&f,&s,&camera,level,&level_height);
+        scrolling(&per,&camera,&level_height);
         animation(&per,&cpt_perso);
         check_changement(&f,&per,&butn,&ps,&ind,&door,&buck,&pl,&key,&mirro,&lo);
         affichage_background(&level,ecran,camera);
         Affichage_objet(&ind,&camera,ecran,&per,&door,&ps,&mirro,&buck,&pl,&key,&lum,&lo);
         blit_button(&butn,ecran);
         animation_tableau(&per,&tab,&butn,ecran);
-        pause_menu(&ps,ecran,&continuer,&cnt3,level,camera);
+        pause_menu(&ps,ecran,&continuer,&cnt3,level,camera,&manette);
         rotation_mirroir(&mirro,&butn1,&level,ecran,&camera,&per,&lum,&door);
         bruler_porte(&lum,&door,ecran);
         lock(&per,ecran,level,camera,&lo);
         door.state[2]=lo.state;
+        fprintf(stderr,"%d\n",per.position.x);
+        if (per.position.x>9900)
+        {
+            return 2;
+            continuer=1;
+        }
         SDL_Flip(ecran);
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
@@ -142,6 +222,7 @@ void init_stage1(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,backgro
     init_key(key);
     init_plant(pl);
     init_indices(ind);
+    per->position.x=8000;
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
@@ -399,9 +480,9 @@ void init_perso(perso *per)
         (*per).still[i]=IMG_Load(im);
     }
 }
-void input (int *continuer, int *f,int *s,inpu *in)
+void input (int *continuer, int *f,int *s,inpu *in,int *manette,char d[3])
 {
-    int space=0,enter=0,escape=0;
+    int space=0,enter=0,escape=0,k;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -461,9 +542,48 @@ void input (int *continuer, int *f,int *s,inpu *in)
                 break;
             }
             break;
+
         }
     }
-    if ((*in).right)
+    /*k=arduinoReadData(manette,d);
+    fprintf(stderr,"%d\n",*manette);
+    switch((*manette))
+            {
+            case 0:
+                {
+                in->right=0;
+                in->left=0;
+                in->up=0;
+                //escape=0;
+                enter=0;
+                }
+                break;
+            case 1:
+                in->right=1;
+                break;
+            case 2:
+                in->left=1;
+                break;
+            case 3:
+                in->up=1;
+                break;
+             case 5:
+                in->up=1;
+                in->right=1;
+                break;
+            case 6:
+                in->up=1;
+                in->left=1;
+                break;
+            case 9:
+                //escape=1;
+                break;
+            case 8:
+                enter=1;
+                break;
+            }
+            */
+        if ((*in).right)
     {
         if (((*in).up)&&((*s)==0))
         {
@@ -512,6 +632,10 @@ void input (int *continuer, int *f,int *s,inpu *in)
     {
         (*f)=0;
     }
+    /*if (manette==1)
+    {
+        (*f)=1;
+    }*/
     /*if ((space)&&((*s)==0))
     {
         (*s)=-16;
@@ -594,7 +718,7 @@ void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,do
 
     }
     else door->ndoor=0;
-     fprintf(stderr,"%d\n",door->state[2]);
+     //fprintf(stderr,"%d\n",door->state[2]);
     if ((dante->couleur[0].b==210&&dante->couleur[0].g==0&&dante->couleur[0].r==0)||(dante->couleur[2].b==210&&dante->couleur[2].g==0&&dante->couleur[2].r==0))
     {
         if (buck->picked==0)
@@ -691,7 +815,7 @@ void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,do
 
     }
 }
-void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level)
+void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level,int *level_height)
 {
     //printf("x=%d\ny=%d\n",per->position.x,per->position.y);1500 480
     int col,f;
@@ -745,11 +869,11 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             per->position_jump.y=0;
             per->jm=1;
         }
-        if (per->position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
+        if (per->position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)))
         {
             (*s)=0;
             per->jm=0;
-            per->position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2));
+            per->position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2));
             per->col_jm=0;
             per->tomb=0;
         }
@@ -873,8 +997,8 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         //per->jumping=0;
     }
     else if ((*s)==0)
-        if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<20)
-            (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)));
+        if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<20)
+            (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)));
         else if (per->tomb==0)
         {
             per->jm=0;
@@ -884,7 +1008,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         }
     per->col=0;
 }
-void scrolling (perso *per, SDL_Rect *camera)
+void scrolling (perso *per, SDL_Rect *camera,int *level_height)
 {
     camera->x=(per->position.x+(per->width/2))-(screen_width/2);
     camera->y=(per->position.y+(per->height/2))-(screen_height/2);
@@ -900,9 +1024,9 @@ void scrolling (perso *per, SDL_Rect *camera)
     {
         camera->x = level_width - camera->w;
     }
-    if( camera->y > level_height - camera->h )
+    if( camera->y > (*level_height) - camera->h )
     {
-        camera->y = level_height - camera->h;
+        camera->y = (*level_height) - camera->h;
     }
     per->position_affichage.x=per->position.x-camera->x;
     per->position_affichage.y=per->position.y-camera->y;
@@ -1111,11 +1235,11 @@ void animation(perso *per,int *cpt_perso)
         (*per).anim=0;
     }
 }
-int detec_sol (int x,background a)
+int detec_sol (int x,background a,int *level_height)
 {
     int i,y;
     SDL_Color couleur;
-    i=level_height-10;
+    i=(*level_height)-10;
     y=0;
     while ((i>0)&&(y==0))
     {
@@ -1177,7 +1301,7 @@ void animation_tableau(perso *per,tableau *tab,button *butn,SDL_Surface *ecran)
         tab->play=0;
     }
 }
-void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect camera)
+void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect camera,int *manette)
 {
     if (ps->pause==1)
     {
@@ -1383,6 +1507,7 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
                 SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
         }
         *compteur=0;
+        (*manette)=0;
     }
 }
 void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps,mirror *mirro,bucket *buck,plant *pl,keys *key,lumiere *lum,locks *lo)
@@ -1806,7 +1931,7 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
 
     if (lo->interacted==1)
     {
-    int i,curseur=0,enter=0,code[2]={5,8},code1[2]={11,11},cpt=0,b=0,f=0;
+    int i,curseur=0,enter=0,code[2]={5,8},code1[2]={11,11},cpt=0,b=0,f=0,a;
     char im[50];
     SDL_Event event;
     SDL_Color couleur={0, 0, 0};
@@ -1877,6 +2002,7 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
     while ((lo->interacted==1)&&(per->tentatives>0))
     {
         //fprintf(stderr,"%d\n",lo->interacted);
+        a=arduinoWriteData(per->tentatives);
         SDL_BlitSurface(level.back[level.anim],&camera,ecran,NULL);
         SDL_BlitSurface(per->render,NULL,ecran,&per->position_affichage);
         SDL_BlitSurface(lo->l[b],NULL,ecran,&lo->position);
@@ -1902,6 +2028,8 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
                     pos_c[1].x=737;
                     lo->position.x=482;
                 }
+                a=arduinoWriteData(per->tentatives+5);
+
             }
             else
             {
@@ -2057,3 +2185,43 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
 
     }
 }
+int arduinoReadData(int *x,char s[3])
+{
+
+    //system("stty -F /dev/ttyACM0 9600 -parenb cs8 -cstopb");
+    char chemin[]="/dev/ttyACM0";
+    FILE* f;
+    f=fopen(chemin,"r");
+
+    if(f == NULL)
+        return(-1);
+
+    fscanf(f,"%s",s);
+    //printf("arduino_input=%d\n",*x);
+    (*x)=atoi(s);
+    //printf("arduino_input=%d\n",*x);
+
+    fclose(f);
+
+    return(0);
+}
+int arduinoWriteData(int x)
+{
+
+    //system("stty -F /dev/ttyACM0 9600 -parenb cs8 -cstopb");
+    char chemin[]="/dev/ttyACM0";
+    FILE* f;
+    f=fopen(chemin,"w");
+
+    if(f == NULL)
+        return(-1);
+
+    fprintf(f,"%d",x);
+    //printf("arduino_input=%d\n",*x);
+    //printf("arduino_input=%d\n",*x);
+
+    fclose(f);
+
+    return(0);
+}
+
