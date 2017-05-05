@@ -10,13 +10,16 @@
 int main(int argc, char *argv[])
 {
     int stage=1;
-    //map();
+    map1();
     //stage=menu();
     if (stage==1)
     {
-    	stage1();
+    	stage=stage1();
+    }
+    if (stage==2)
+    {
+        stage2();
     }
     return 0;
 }
-
 

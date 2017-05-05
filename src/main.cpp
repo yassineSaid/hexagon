@@ -6,17 +6,17 @@
 #include <SDL/SDL_ttf.h>
 #include "menu.c"
 #include "stages.c"
-#include "map.h"
+#include "map.c"
 int main(int argc, char *argv[])
 {
     int stage=1;
-    //map();
+    map1();
     //stage=menu();
     if (stage==1)
     {
-    	stage1();
+    	stage=stage1();
     }
-    else if (stage==2)
+    if (stage==2)
     {
         stage2();
     }

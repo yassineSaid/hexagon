@@ -1,5 +1,5 @@
-#ifndef stage1_H_
-#define stage1_H_
+#ifndef stages_H_
+#define stages_H_
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
@@ -7,7 +7,7 @@
 
 
 #define level_width 10000
-#define level_height 600
+//#define level_height 1200
 #define screen_width 1366
 #define screen_height 600
 typedef struct
@@ -23,6 +23,12 @@ typedef struct
 	char name[6],images[50];
 	SDL_Color couleur[8];
 }perso;
+typedef struct
+{
+	SDL_Surface *cerebus_imin[7],*cerebus_isar[7];
+	SDL_Rect position,position_affichage;
+	int compteur_enemie,cnt_blit,etat;
+}enemie;
 typedef struct
 {
     SDL_Surface *image_inventaire,*image_object[5];
@@ -109,21 +115,23 @@ typedef struct
 	int state,interacted,n_lock;
 }locks;
 void stage2();
-void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1);
-void stage1();
-void input(int *continuer, int *f,int *s,inpu *in);
+void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2);
 void init_background2(background *level);
+void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran);
+void initialitation_mob(enemie *mob);
 /////////////////////////////////////////////
-void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level);
-void scrolling (perso *per, SDL_Rect *camera);
+int stage1();
+void input(int *continuer, int *f,int *s,inpu *in,int *manette,char d[3]);
+void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level,int *level_height);
+void scrolling (perso *per, SDL_Rect *camera,int *level_height);
 void init_stage1(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door,mirror *mirro,bucket *buck,keys *key,plant *pl,lumiere *lum,button *butn1,locks *lo);
 void collision_back(perso *dante,background a);
 SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y);
 void animation(perso *per,int *cpt_perso);
-int detec_sol (int x,background a);
+int detec_sol (int x,background a,int *level_height);
 void black (SDL_Surface *ecran, int trans,int *t);
 void animation_tableau(perso *per,tableau *tab,button *butn,SDL_Surface *ecran);
-void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect camera);
+void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect camera,int *manette);
 void Affichage_objet(indices *ind,SDL_Rect *camera,SDL_Surface *ecran,perso *per,doors *door,pause *ps,mirror *mirro,bucket *buck,plant *pl,keys *key,lumiere *lum,locks *lo);
 void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,doors *door,bucket *buck,plant *pl,keys *key,mirror *mirro,locks *lo);
 void blit_button(button *butn,SDL_Surface *ecran);
@@ -153,4 +161,6 @@ void init_plant(plant *pl);
 void init_indices(indices *ind);
 void init_background1(background *level);
 void init_input(inpu *in);
+int arduinoReadData(int *x,char s[3]);
+int arduinoWriteData(int x);
 #endif

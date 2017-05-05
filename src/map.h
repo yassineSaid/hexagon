@@ -1,15 +1,15 @@
 #ifndef map_H_
 #define map_H_
 #include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL/SDL_image.h> 
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 #include "stages.h"
 
 
-#define map_width 6000
-#define map_height 6000
-void map();
+#define map_width 2500
+#define map_height 2500
+void map1();
 void input1 (int *continuer,int *f,int *s,inpu *in);
 int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background level);
 void scrolling1 (perso *per, SDL_Rect *camera);
