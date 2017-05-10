@@ -63,7 +63,7 @@
 	<SDL/SDL_ttf.h>
 	"stage1.h"
 
-1493976800 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/main.cpp
+1494378459 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/main.cpp
 	<stdlib.h>
 	<stdio.h>
 	<SDL/SDL.h>
@@ -74,7 +74,7 @@
 	"stages.c"
 	"map.c"
 
-1493149560 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
+1493978882 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
 	"menu.h"
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
@@ -104,14 +104,14 @@
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 
-1493936041 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.h
+1494371032 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 	"stages.h"
 
-1493149560 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
+1493978882 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/menu.c
 	"menu.h"
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
@@ -129,7 +129,7 @@
 	<SDL/SDL_thread.h>
 	<SDL/SDL_rotozoom.h>
 
-1493977055 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
+1494378884 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
 	"stages.h"
 	"menu.h"
 	<SDL/SDL.h>
@@ -139,13 +139,13 @@
 	<SDL/SDL_thread.h>
 	<SDL/SDL_rotozoom.h>
 
-1493933343 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.h
+1494378309 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.h
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_mixer.h>
 	<SDL/SDL_ttf.h>
 
-1493976779 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
+1494378884 source:/home/gogetsu/esprit-2017-1a3-hexagon-project/src/stages.c
 	"stages.h"
 	"menu.h"
 	<SDL/SDL.h>
@@ -155,8 +155,9 @@
 	<SDL/SDL_thread.h>
 	<SDL/SDL_rotozoom.h>
 
-1493937247 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.c
+1494374484 /home/gogetsu/esprit-2017-1a3-hexagon-project/src/map.c
 	"map.h"
+	"stages.h"
 	<SDL/SDL.h>
 	<SDL/SDL_image.h>
 	<SDL/SDL_mixer.h>

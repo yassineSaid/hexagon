@@ -1,22 +1,21 @@
 #include "map.h"
-//#include "stages.h"
+#include "stages.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
-void map1()
+int map1(int *levels)
 {
-	int continuer=1,x=0,y=0,f=0,m=0,s=0;
-	SDL_Surface *ecran = NULL,*fond = NULL;
+	int continuer=1,f=0,m=0,s=0;
+	SDL_Surface *ecran = NULL;
 	SDL_Rect positionFond,camera;
-	SDL_Event event;
 	background level;
 	perso per;
 	inpu in;
+	button butn;
 	SDL_Init(SDL_INIT_VIDEO);
 	ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
-
-	init1 (&per,&camera,&positionFond,&in,ecran,&level);
+	init1 (&per,&camera,&positionFond,&in,ecran,&level,&butn,*levels);
 	SDL_BlitSurface(level.back_col,&camera,ecran,&positionFond);
 	SDL_BlitSurface(level.back1,&camera,ecran,&positionFond);
 	SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
@@ -25,13 +24,27 @@ void map1()
 	while (continuer!=0)
     {
     	input1(&continuer,&f,&s,&in);
-		m=Deplacement_Perso1(&per,&f,&s,&camera,level);
+		m=Deplacement_Perso1(&per,&f,&s,&camera,level,&butn);
 	    scrolling1(&per,&camera);
 	    animation1(&per);
 		SDL_BlitSurface(level.back1,&camera,ecran,&positionFond);
 		SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
+		blit_button(&butn,ecran);
 		SDL_Flip(ecran);
 		m=0;
+	fprintf(stderr,"%d",f);
+	if ((f==10)&&(butn.n_tab==1))
+	{
+	return 1;
+	}
+    if ((f==10)&&(butn.n_tab==2))
+	{
+	return 2;
+	}
+	if ((f==10)&&(butn.n_tab==3))
+	{
+	return 3;
+	}
     }
     SDL_FreeSurface(ecran);
     SDL_Quit();
@@ -69,6 +82,7 @@ void input1 (int *continuer, int *f,int *s,inpu *in)
 		                case SDLK_SPACE:
 							space=1;
 						break;
+						default: break;
 					}
 				break;
 				case SDL_KEYUP:
@@ -86,6 +100,7 @@ void input1 (int *continuer, int *f,int *s,inpu *in)
 		                case SDLK_DOWN:
 							(*in).down=0;
 						break;
+						default:
 						break;
 					}
 				break;
@@ -127,19 +142,19 @@ void input1 (int *continuer, int *f,int *s,inpu *in)
 			else
 				(*f)=4;
 		}
+		else if (space)
+		{
+			(*f)=10;
+		}
 		else
 		{
 			(*f)=0;
 		}
-		if ((space)&&((*s)==0))
-		{
-			(*s)=-18;
-		}
 
 }
-int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background level)
+int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background level,button *butn)
 {
-	int col,m=0,i=8,f;
+	int col,m=0,f;
 	perso per_0;
 	per_0=(*per);
 	(*per).state=0;
@@ -175,7 +190,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}*/
 	if (f==1)
 	{
-		if ((*per).position.x<10950)
+		if ((*per).position.x<1500)
 		{
 			(*per).position.x+=(*per).speed;
 			(*per).state=1;
@@ -184,7 +199,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	}
 	else if (f==2)
 	{
-		if ((*per).position.x>50)
+		if ((*per).position.x>10)
 		{
 			m=1;
 			(*per).position.x-=(*per).speed;
@@ -265,7 +280,7 @@ int Deplacement_Perso1 (perso *per,int *l,int *s,SDL_Rect *camera,background lev
 	{
 		(*per).state=0;
 	}
-	col=collision_back1(per,level);
+	col=collision_back1(per,level,butn);
 	if (col==1)
 	{
 		(*per)=per_0;
@@ -305,12 +320,26 @@ void scrolling1 (perso *per, SDL_Rect *camera)
     	per->position_affichage.x=per->position.x-camera->x;
 		per->position_affichage.y=per->position.y-camera->y;
 }
-void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level)
+void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surface *ecran,background *level,button *butn,int levels)
 {
 	int i;
 	char im[50];
-	(*per).position.x=500;
-	(*per).position.y=500;
+	 init_button(butn);
+	if (levels==1)
+	{
+	per->position.x=10;
+	per->position.y=10;
+	}
+	else if (levels==2)
+	{
+	per->position.x=500;
+	per->position.y=300;
+	}
+	else if (levels==3)
+	{
+	per->position.x=800;
+	per->position.y=500;
+	}
 	//(*per).position_affichage.x=10;
 	(*per).height=120;
 	(*per).width=22;
@@ -320,9 +349,9 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 	(*per).inventory=0;
 	(*per).speed=5;
 	strcpy((*per).name,"Dante");
-	strcpy((*per).images,"pablo_testing_imin/pablo_");
+	strcpy((*per).images,"images/sprites_map/right/");
 	sprintf(im,"%sstill.png",(*per).images);
-	(*per).render=IMG_Load("pablo_testing_imin/pablo_00000.png");
+	(*per).render=IMG_Load("images/sprites_map/right/1.png");
 	(*level).back1=IMG_Load("polices/Map.jpg");
 	(*level).back_col=IMG_Load("polices/Map_col.jpg");
 	(*camera).x=6000;
@@ -335,16 +364,28 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 	(*in).down=0;
 	(*in).left=0;
 	(*in).right=0;
-	for(i=0;i<8;i++)
+	for(i=0;i<3;i++)
 	{
-		sprintf(im,"%s%05d.png",(*per).images,i);
+		sprintf(im,"%s%d.png",(*per).images,i+1);
 		(*per).walk_right[i]=IMG_Load(im);
 	}
-	strcpy((*per).images,"pablo_testing_isar/pablo_");
-	for(i=0;i<8;i++)
+	strcpy((*per).images,"images/sprites_map/left/");
+	for(i=0;i<3;i++)
 	{
-		sprintf(im,"%s%05d.png",(*per).images,i);
+		sprintf(im,"%s%d.png",(*per).images,i+1);
 		(*per).walk_left[i]=IMG_Load(im);
+	}
+	strcpy((*per).images,"images/sprites_map/up/");
+	for(i=0;i<3;i++)
+	{
+		sprintf(im,"%s%d.png",(*per).images,i+1);
+		(*per).walk_up[i]=IMG_Load(im);
+	}
+	strcpy((*per).images,"images/sprites_map/down/");
+	for(i=0;i<3;i++)
+	{
+		sprintf(im,"%s%d.png",(*per).images,i+1);
+		(*per).walk_down[i]=IMG_Load(im);
 	}
 	/*for(i=0;i<7;i++)
 	{
@@ -377,10 +418,11 @@ void init1 (perso *per,SDL_Rect *camera,SDL_Rect *positionFond,inpu *in,SDL_Surf
 		duck[i]=IMG_Load(im);
 	}*/
 }
-int collision_back1(perso *dante,background a)
+int collision_back1(perso *dante,background a,button *butn)
 {
 	int col=0;
-
+	butn->show=0;
+	butn->n_tab=0;
 SDL_Rect point[8];
 SDL_Color couleur[8];
 
@@ -425,18 +467,79 @@ return 10;
 else if (couleur[1].r==255 && couleur[1].g==255 && couleur[1].b==255)
 return 3;*/
 
-if ((couleur[2].r==255 && couleur[2].g==255 && couleur[2].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[7].r==255 && couleur[7].g==255 && couleur[7].b==255))
-	col= 3;
-if (couleur[3].r==255 && couleur[3].g==255 && couleur[3].b==255)
-	col= 4;
-if ((couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)||(couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255))
-	col= 5;
+
+if ((couleur[2].r==254 && couleur[2].g==0 && couleur[2].b==0)||(couleur[6].r==254 && couleur[6].g==0 && couleur[6].b==0)||(couleur[7].r==254 && couleur[7].g==0 && couleur[7].b==0))
+	{col= 3;
+	butn->show=1;
+	butn->n_tab=1;}
+if (couleur[3].r==254 && couleur[3].g==0 && couleur[3].b==0)
+	{col= 4;
+	butn->show=1;
+	butn->n_tab=1;}
+if ((couleur[4].r==254 && couleur[4].g==0 && couleur[4].b==0)||(couleur[6].r==254 && couleur[6].g==0 && couleur[6].b==0))
+	{col= 5;
+	butn->show=1;
+	butn->n_tab=1;}
 /*if ((couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255))
 return 5;*/
-if (couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255)
-	col= 2;
-if ((couleur[0].r==255 && couleur[0].g==255 && couleur[0].b==255)&&(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255)&&(couleur[5].r==255 && couleur[5].g==255 && couleur[5].b==255))
-	col= 1;
+if (couleur[5].r==254 && couleur[5].g==0 && couleur[5].b==0)
+	{col= 2;
+	butn->show=1;
+	butn->n_tab=1;}
+if ((couleur[0].r==254 && couleur[0].g==0 && couleur[0].b==0)&&(couleur[4].r==254 && couleur[4].g==0 && couleur[4].b==0)&&(couleur[5].r==254 && couleur[5].g==0 && couleur[5].b==0))
+	{col= 1;
+	butn->show=1;
+	butn->n_tab=1;}
+
+
+
+if ((couleur[2].r==0 && couleur[2].g==255 && couleur[2].b==1)||(couleur[6].r==0 && couleur[6].g==255 && couleur[6].b==1)||(couleur[7].r==0 && couleur[7].g==255 && couleur[7].b==1))
+	{col= 3;
+	butn->show=1;
+	butn->n_tab=2;}
+if (couleur[3].r==0 && couleur[3].g==255 && couleur[3].b==1)
+	{col= 4;
+	butn->show=1;
+	butn->n_tab=2;}
+if ((couleur[4].r==0 && couleur[4].g==255 && couleur[4].b==1)||(couleur[6].r==0 && couleur[6].g==255 && couleur[6].b==1))
+	{col= 5;
+	butn->show=1;
+	butn->n_tab=2;}
+/*if ((couleur[6].r==0 && couleur[6].g==255 && couleur[6].b==1)||(couleur[4].r==0 && couleur[4].g==255 && couleur[4].b==1))
+return 5;*/
+if (couleur[5].r==0 && couleur[5].g==255 && couleur[5].b==1)
+	{col= 2;
+	butn->show=1;
+	butn->n_tab=2;}
+if ((couleur[0].r==0 && couleur[0].g==255 && couleur[0].b==1)&&(couleur[4].r==0 && couleur[4].g==255 && couleur[4].b==1)&&(couleur[5].r==0 && couleur[5].g==255 && couleur[5].b==1))
+	{col= 1;
+	butn->show=1;
+	butn->n_tab=2;}
+
+
+
+if ((couleur[2].r==0 && couleur[2].g==0 && couleur[2].b==254)||(couleur[6].r==0 && couleur[6].g==0 && couleur[6].b==254)||(couleur[7].r==0 && couleur[7].g==0 && couleur[7].b==254))
+	{col= 3;
+	butn->show=1;
+	butn->n_tab=3;}
+if (couleur[3].r==0 && couleur[3].g==0 && couleur[3].b==254)
+	{col= 4;
+	butn->show=1;
+	butn->n_tab=3;}
+if ((couleur[4].r==0 && couleur[4].g==0 && couleur[4].b==254)||(couleur[6].r==0 && couleur[6].g==0 && couleur[6].b==254))
+	{col= 5;
+	butn->show=1;
+	butn->n_tab=3;}
+/*if ((couleur[6].r==0 && couleur[6].g==0 && couleur[6].b==254)||(couleur[4].r==0 && couleur[4].g==0 && couleur[4].b==254))
+return 5;*/
+if (couleur[5].r==0 && couleur[5].g==0 && couleur[5].b==254)
+	{col= 2;
+	butn->show=1;
+	butn->n_tab=3;}
+if ((couleur[0].r==0 && couleur[0].g==0 && couleur[0].b==254)&&(couleur[4].r==0 && couleur[4].g==0 && couleur[4].b==254)&&(couleur[5].r==0 && couleur[5].g==0 && couleur[5].b==254))
+	{col= 1;
+	butn->show=1;
+	butn->n_tab=3;}
 
 
 return col;
@@ -460,6 +563,18 @@ void animation1(perso *per)
 		(*per).render=(*per).walk_left[(*per).anim];
 		(*per).anim++;
 	}
+	else if ((*per).state==3)
+	{
+		(*per).state0=(*per).state;
+		(*per).render=(*per).walk_up[(*per).anim];
+		(*per).anim++;
+	}
+	else if ((*per).state==4)
+	{
+		(*per).state0=(*per).state;
+		(*per).render=(*per).walk_down[(*per).anim];
+		(*per).anim++;
+	}
 	else if ((*per).state==0)
 	{
 		(*per).anim=0;
@@ -468,8 +583,18 @@ void animation1(perso *per)
 		if ((*per).state0==2)
 			(*per).render=(*per).walk_left[(*per).anim];
 	}
-	if ((*per).anim>7)
+	if ((*per).anim>2)
 	{
 		(*per).anim=0;
 	}
+}
+void init_button(button *butn)
+{
+    butn->show=0;
+    butn->cnt_blit=0;
+    butn->n_tab=0;
+    butn->position.x=1200;
+    butn->position.y=500;
+    butn->button[0]=IMG_Load("buttons/button.png");
+    butn->button[1]=IMG_Load("buttons/buttonp.png");
 }
