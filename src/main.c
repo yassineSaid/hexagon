@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
     int stage=0,levels=1;
-    //stage=menu();
+    menu();
     if (stage==0)
     stage=map1(&levels);
     if (stage==1)
@@ -31,6 +31,5 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
 
 
