@@ -228,8 +228,8 @@ int col_scie (scie *sc,perso *dante,SDL_Surface *ecran,SDL_Rect camera,health *h
         sc->time=0;
     }
     }
-    printf("hitonce=%d\n",sc->hitonce);
-    printf("time=%d\n",sc->time);
+    //printf("hitonce=%d\n",sc->hitonce);
+    //printf("time=%d\n",sc->time);
     return col;
 }
 void init_hache(hache *ha)
@@ -502,7 +502,7 @@ void init_background3(background *level)
     char im[50];
     for(i=0; i<25; i++)
     {
-        sprintf(im,"images/stage3/stage3.jpg",i);
+        sprintf(im,"images/stage3/stage3.jpg");
         level->back[i]=IMG_Load(im);
     }
     (*level).back_col=IMG_Load("images/stage3/stage3_col.jpg");
@@ -600,7 +600,7 @@ int stage2()
 }
 void check_changement_stage2(perso *dante,time *t,coins *cn)
 {
-    printf("r=%d\ng=%d\nb=%d\n",dante->couleur[0].r,dante->couleur[0].g,dante->couleur[0].b);
+    //printf("r=%d\ng=%d\nb=%d\n",dante->couleur[0].r,dante->couleur[0].g,dante->couleur[0].b);
     if ((dante->couleur[0].b==1&&dante->couleur[0].g==240&&dante->couleur[0].r==255)||(dante->couleur[2].b==0&&dante->couleur[2].g==240&&dante->couleur[2].r==255))
     {
          dante->position.x=500;

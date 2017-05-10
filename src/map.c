@@ -32,7 +32,7 @@ int map1(int *levels)
 		blit_button(&butn,ecran);
 		SDL_Flip(ecran);
 		m=0;
-	fprintf(stderr,"%d",f);
+	//fprintf(stderr,"%d",f);
 	if ((f==10)&&(butn.n_tab==1))
 	{
 	return 1;
