@@ -12,14 +12,19 @@
 #define screen_height 600
 typedef struct
 {
+	int haut,bas,gauche_haut,gauche_bas,gauche_centre,droite_haut,droite_bas,droite_centre;
+}collision;
+typedef struct
+{
 	SDL_Surface *back[25],*back_col,*back1;
 	int anim,cpt;
 }background;
 typedef struct
 {
 	SDL_Rect position,position_affichage,position_jump,position_pre_jump;
-	SDL_Surface *still[3],*render,*walk_left[8],*walk_right[8],*jump_left[8],*jump_right[8],*sliding[7],*duck[3];
-	int state,state0,anim,tentatives,inventory,height,width,speed,interacted,jumping,jm,col_jm,tomb,col;
+	SDL_Surface *still[3],*render,*walk_left[8],*walk_right[8],*jump_left[8],*jump_right[8],*sliding[7],*duck[3],*walk_up[8],*walk_down[8];
+	int state,state0,anim,tentatives,inventory,height,width,speed,interacted,jumping,jm,col_jm,tomb,col,detectable;
+	collision c;
 	char name[6],images[50];
 	SDL_Color couleur[8];
 }perso;
@@ -27,7 +32,8 @@ typedef struct
 {
 	SDL_Surface *cerebus_imin[7],*cerebus_isar[7];
 	SDL_Rect position,position_affichage;
-	int compteur_enemie,cnt_blit,etat;
+	int compteur_enemie,cnt_blit,etat,hitonce;
+	Uint32 time;
 }enemie;
 typedef struct
 {
@@ -65,7 +71,7 @@ typedef struct
 {
 	SDL_Surface *button[2];
 	SDL_Rect position,position_affichage;
-	int show,n_tab,cnt_blit;
+	int show,n_tab,cnt_blit,cacher;
 }button;
 typedef struct
 {
@@ -110,17 +116,82 @@ typedef struct
 }inpu;
 typedef struct
 {
+	SDL_Surface *coin[18];
+	SDL_Rect position[18],position_affichage[18];
+	int nbr_coin, collected;
+}coins;
+typedef struct
+{
+    SDL_Surface *text_surface,*icon;
+    char text_a_afficher[10];
+    TTF_Font *police;
+    SDL_Color couleur;
+    SDL_Rect position_txt,position_icon;
+}Texte;
+typedef struct
+{
+	int temps,temps_actuel,temps_precedent,min,sec,dt,angle;
+    SDL_Rect pos_time,pos_icon;
+    TTF_Font *police;
+    SDL_Color couleur;
+    SDL_Surface *aff_time,*icon;
+    char policeH[50];
+}time;
+typedef struct
+{
 	SDL_Surface *l[3],*button[10][2];
 	SDL_Rect position,position_button[10],position_mouse[10][2];
 	int state,interacted,n_lock;
 }locks;
-void stage2();
-void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2);
+typedef struct
+{
+	SDL_Rect position,position_affichage;
+	SDL_Surface *heal[5];
+	int vie;
+}health;
+typedef struct
+{
+	SDL_Rect position;
+	int anim,m,cnt,p,hitonce;
+	SDL_Surface *h[13],*h_col[13];
+    Uint32 time;
+}hache;
+typedef struct
+{
+	SDL_Rect position;
+	int anim,m,cnt,hitonce;
+	SDL_Surface *s[14],*s_col[14];
+	Uint32 time;
+}scie;
+int stage3();
+void initialitation_mob_kbir(enemie *mob,int positionx,int positiony);
+void init_stage3(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2,enemie *mob3,health *hl,hache *ha);
+void init_background3(background *level);
+void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran,int max_position_right,int max_position_left,perso *dante,int nmbrofsprites,health *hl,int speed);
+void initialitation_mob(enemie *mob,int positionx,int positiony);
+int IA(perso *dante , enemie *mob);
+void check_changement_stage3(int *f,perso *dante,button *butn,pause *ps);
+void init_hache(hache *ha);
+int col_hache (hache *ha,perso *dante,SDL_Surface *ecran,SDL_Rect camera,health *hp);
+void init_scie(scie *sc);
+int col_scie (scie *sc,perso *dante,SDL_Surface *ecran,SDL_Rect camera,health *hp);
+////////////////////////////////////////////
+int stage2();
+void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,coins *coin,Texte *texte,time *t);
 void init_background2(background *level);
-void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran);
-void initialitation_mob(enemie *mob);
+void init_coins(coins *coin);
+void blit_coins(coins *coin,SDL_Rect *camera,SDL_Surface *ecran);
+void collect_coins(coins *coin,perso *per);
+void init_texte(Texte *texte);
+void afficher_collected_coins(Texte *texte,coins *coin,SDL_Surface *ecran);
+void init_timer(time *t);
+void timer (time *t,SDL_Surface *ecran,int chrono);
+void check_win(time *t,coins *coin,int *continuer,perso *per);
+void check_changement_stage2(perso *dante,time *t,coins *cn);
 /////////////////////////////////////////////
 int stage1();
+void health_bar(health *hl,SDL_Surface *ecran,perso *per,SDL_Rect *camera);
+void init_health_bar(health *hl);
 void input(int *continuer, int *f,int *s,inpu *in,int *manette,char d[3]);
 void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level,int *level_height);
 void scrolling (perso *per, SDL_Rect *camera,int *level_height);
@@ -128,7 +199,7 @@ void init_stage1(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,backgro
 void collision_back(perso *dante,background a);
 SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y);
 void animation(perso *per,int *cpt_perso);
-int detec_sol (int x,background a,int *level_height);
+int detec_sol (int x,background a,int *level_height,perso *per);
 void black (SDL_Surface *ecran, int trans,int *t);
 void animation_tableau(perso *per,tableau *tab,button *butn,SDL_Surface *ecran);
 void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,background level,SDL_Rect camera,int *manette);

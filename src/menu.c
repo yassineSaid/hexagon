@@ -115,13 +115,12 @@ int menu ()
 {
 	SDL_Surface *ecran = NULL;
     position pos;
-    affichage aff;
     SDL_Event event;
     Mix_Music *musique;
     Mix_Chunk *ding;
     SDL_Color couleurHelp = {247, 199, 134};
     int curseur=1,continuer=1,i,fix=0,ac=1,j,volm=0,volb=14,stage=0,enter=0,mouse=0,mouse_x,mouse_y;
-    char policeHelp[]="polices/Cardinal.ttf",mode[5];
+    char policeHelp[]="polices/Cardinal.ttf";
     const int FPS=40;
 	Uint32 start;
 	SDL_Init(SDL_INIT_VIDEO);

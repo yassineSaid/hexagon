@@ -9,17 +9,28 @@
 #include "map.h"
 int main(int argc, char *argv[])
 {
-    int stage=1;
-    map1();
+    int stage=0,levels=1;
     //stage=menu();
+    if (stage==0)
+    stage=map1(&levels);
     if (stage==1)
     {
-    	stage=stage1();
+    	levels=stage1();
     }
+    if (stage==1)
+    stage=map1(&levels);
     if (stage==2)
     {
-        stage2();
+        levels=stage2();
+    }
+    if (stage==2)
+    stage=map1(&levels);
+    if (stage==3)
+    {
+        stage3();
     }
     return 0;
 }
+
+
 

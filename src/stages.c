@@ -6,7 +6,7 @@
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_thread.h>
 #include <SDL/SDL_rotozoom.h>
-void stage2()
+int stage3()
 {
     int continuer=1,f=0,s=0,cpt_perso=0,cnt3=0,manette=0;
     int level_height=1200;
@@ -18,49 +18,82 @@ void stage2()
     inpu in;
     button butn,butn1;
     pause ps;
-    enemie mob,mob2;
+    enemie mob,mob2,mob3;
+    health hl;
+    hache ha;
+    scie sc;
     const int FPS=60;
     Uint32 start;
+    Mix_Music *musique;
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
-    init_stage2(&per,&camera,&in,ecran,&level,&butn,&ps,&butn1,&mob,&mob2);
-    mob2.position.x=3100;
+    init_stage3(&per,&camera,&in,ecran,&level,&butn,&ps,&butn1,&mob,&mob2,&mob3,&hl,&ha);
+    init_scie(&sc);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+    musique = Mix_LoadMUS("stage3.mp3");
+    Mix_PlayMusic(musique, -1);
     while (continuer!=0)
     {
         start=SDL_GetTicks();
         input(&continuer,&f,&s,&in,&manette,d);
+        if (per.detectable)
         Deplacement_Perso(&per,&f,&s,&camera,level,&level_height);
         scrolling(&per,&camera,&level_height);
         animation(&per,&cpt_perso);
+        check_changement_stage3(&f,&per,&butn,&ps);
         affichage_background(&level,ecran,camera);
-        mob_yitharek(&mob,&camera,ecran);
-        mob_yitharek(&mob2,&camera,ecran);
+        blit_button(&butn,ecran);
+        col_hache(&ha,&per,ecran,camera,&hl);
+        col_scie(&sc,&per,ecran,camera,&hl);
+        health_bar(&hl,ecran,&per,&camera);
+        mob_yitharek(&mob,&camera,ecran,2000,1650,&per,5,&hl,1);
+        mob_yitharek(&mob2,&camera,ecran,1250,1070,&per,5,&hl,1);
+        mob_yitharek(&mob3,&camera,ecran,9000,7300,&per,2,&hl,3);
+        if (per.detectable)
         SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
         if (f==11)
         {
-        ps.pause=1;
+            ps.pause=1;
 
         }
         pause_menu(&ps,ecran,&continuer,&cnt3,level,camera,&manette);
-         //fprintf(stderr,"%d\n",per.position.x);
+        if (per.position.x>9800)
+        {
+            return 4;
+            continuer=0;
+        }
+        //fprintf(stderr,"%d\n",per.position.y);
         SDL_Flip(ecran);
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
+    Mix_FreeMusic(musique);
     SDL_FreeSurface(ecran);
     SDL_Quit();
 
 }
-void initialitation_mob(enemie *mob)
+int IA(perso *dante , enemie *mob)
+{
+	int a=0;
+	if(((mob->position.x-dante->position.x)<200)&&((mob->position.x-dante->position.x)>(-200)))
+	{
+
+		a=1;
+	}
+	return a;
+}
+void initialitation_mob(enemie *mob,int positionx,int positiony)
 {
     char path[40];
     int i=0;
-    mob->position.x=3500;
-    mob->position.y=1000;
+    mob->position.x=positionx;
+    mob->position.y=positiony;
     mob->cnt_blit=0;
     mob->compteur_enemie=0;
     mob->etat=1;
+    mob->hitonce=0;
+    mob->time=0;
     for (i=0; i<6; i++)
     {
         sprintf(path,"images/cerebus_imin/cerebus%d.png",i);
@@ -72,37 +105,349 @@ void initialitation_mob(enemie *mob)
         mob->cerebus_isar[i]=IMG_Load(path);
     }
 }
-void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran)
+void initialitation_mob_kbir(enemie *mob,int positionx,int positiony)
 {
+    char path[40];
+    int i=0;
+    mob->position.x=positionx;
+    mob->position.y=positiony;
+    mob->cnt_blit=0;
+    mob->compteur_enemie=0;
+    mob->etat=1;
+    mob->hitonce=0;
+    mob->time=0;
+    for (i=0; i<3; i++)
+    {
+        sprintf(path,"images/monster/right/%d.png",i+1);  //change here
+        mob->cerebus_imin[i]=IMG_Load(path);
+    }
+    for (i=0; i<3; i++)
+    {
+        sprintf(path,"images/monster/left/%d.png",i+1); //change here
+        mob->cerebus_isar[i]=IMG_Load(path);
+    }
+}
+void init_scie(scie *sc)
+{
+    int i;
+    char im[50];
+    sc->cnt=0;
+    sc->m=1;
+    sc->anim=0;
+    sc->hitonce=0;
+    sc->time=0;
+    sc->position.x=0;
+    sc->position.y=0;
+    for (i=0;i<14;i++)
+    {
+        sprintf(im,"images/scie/normal/%d.png",i+1);
+        sc->s[i]=IMG_Load(im);
+        sprintf(im,"images/scie/col/%d_col.png",i+1);
+        sc->s_col[i]=IMG_Load(im);
+    }
+}
+int col_scie (scie *sc,perso *dante,SDL_Surface *ecran,SDL_Rect camera,health *hp)
+{
+    SDL_Rect point[8];
+    SDL_Color couleur[8];
+    int i,col=0;
+
+    point[4].x=dante->position.x + dante->render->w/2 + dante->width/2; //HAUT DROIT
+    point[4].y=dante->position.y + dante->render->h/4;
+
+    point[0].x=dante->position.x + dante->render->w/2 + dante->width/2; //CENTRE DROIT
+    point[0].y=dante->position.y + dante->render->h/2;
+
+    point[5].x=dante->position.x + dante->render->w/2 + dante->width/2; //BAS DROIT
+    point[5].y=dante->position.y + (dante->render->h*3)/4;
+
+    point[1].x=dante->position.x + dante->render->w/2; //CENTRE BAS
+    point[1].y=dante->position.y + dante->render->h;
+
+    point[3].x=dante->position.x + dante->render->w/2; //CENTRE HAUT
+    point[3].y=dante->position.y;
+
+    point[6].x=dante->position.x + dante->render->w/2 - dante->width/2; //HAUT GAUCHE
+    point[6].y=dante->position.y + dante->render->h/4;
+
+    point[2].x=dante->position.x + dante->render->w/2 - dante->width/2; //CENTRE GAUCHE
+    point[2].y=dante->position.y + dante->render->h/2;
+
+    point[7].x=dante->position.x + dante->render->w/2 - dante->width/2; //BAS GAUCHE
+    point[7].y=dante->position.y + (dante->render->h*3)/4;
+
+
+    couleur[0]=GetPixel (sc->s_col[sc->anim], point[0].x, point[0].y);
+    couleur[1]=GetPixel (sc->s_col[sc->anim], point[1].x, point[1].y);
+    couleur[2]=GetPixel (sc->s_col[sc->anim], point[2].x, point[2].y);
+    couleur[3]=GetPixel (sc->s_col[sc->anim], point[3].x, point[3].y);
+    couleur[4]=GetPixel (sc->s_col[sc->anim], point[4].x, point[4].y);
+    couleur[5]=GetPixel (sc->s_col[sc->anim], point[5].x, point[5].y);
+    couleur[6]=GetPixel (sc->s_col[sc->anim], point[6].x, point[6].y);
+    couleur[7]=GetPixel (sc->s_col[sc->anim], point[7].x, point[7].y);
+
+    for (i=0;i<8;i++)
+    {
+        if (couleur[i].r>=250 && couleur[i].g==0 && couleur[7].b==0)
+            col=1;
+    }
+    sc->cnt++;
+    if ((sc->cnt%3)==1)
+    {
+        sc->anim+=sc->m;
+        if (sc->anim>13)
+        {
+            sc->anim=13;
+            sc->m=-1;
+        }
+        if (sc->anim==0)
+        {
+            sc->anim=0;
+            sc->m=1;
+        }
+
+    }
+    SDL_BlitSurface(sc->s[sc->anim],&camera,ecran,NULL);
+    if (dante->detectable==1)
+    {
+    if (sc->hitonce==0)
+    {
+        if (col==1)
+        {
+        hp->vie--;
+        sc->hitonce=1;
+        }
+    }
+    if (sc->hitonce==1)
+    {
+        sc->time=SDL_GetTicks();
+    }
+    if ((sc->time%2000)==0)
+    {
+        sc->hitonce=0;
+        sc->time=0;
+    }
+    }
+    printf("hitonce=%d\n",sc->hitonce);
+    printf("time=%d\n",sc->time);
+    return col;
+}
+void init_hache(hache *ha)
+{
+    int i;
+    char im[50];
+    ha->m=2;
+    ha->p=0;
+    ha->cnt=0;
+    ha->anim=0;
+    ha->hitonce=0;
+    ha->position.x=0;
+    ha->position.y=0;
+    ha->time=0;
+    for (i=0;i<13;i++)
+    {
+        sprintf(im,"images/hache/normal/%d.png",i+1);
+        ha->h[i]=IMG_Load(im);
+        sprintf(im,"images/hache/col/%d_col.png",i+1);
+        ha->h_col[i]=IMG_Load(im);
+    }
+}
+int col_hache (hache *ha,perso *dante,SDL_Surface *ecran,SDL_Rect camera,health *hp)
+{
+    SDL_Rect point[8];
+    SDL_Color couleur[8];
+    int i,col=0;
+
+    point[4].x=dante->position.x + dante->render->w/2 + dante->width/2; //HAUT DROIT
+    point[4].y=dante->position.y + dante->render->h/4;
+
+    point[0].x=dante->position.x + dante->render->w/2 + dante->width/2; //CENTRE DROIT
+    point[0].y=dante->position.y + dante->render->h/2;
+
+    point[5].x=dante->position.x + dante->render->w/2 + dante->width/2; //BAS DROIT
+    point[5].y=dante->position.y + (dante->render->h*3)/4;
+
+    point[1].x=dante->position.x + dante->render->w/2; //CENTRE BAS
+    point[1].y=dante->position.y + dante->render->h;
+
+    point[3].x=dante->position.x + dante->render->w/2; //CENTRE HAUT
+    point[3].y=dante->position.y;
+
+    point[6].x=dante->position.x + dante->render->w/2 - dante->width/2; //HAUT GAUCHE
+    point[6].y=dante->position.y + dante->render->h/4;
+
+    point[2].x=dante->position.x + dante->render->w/2 - dante->width/2; //CENTRE GAUCHE
+    point[2].y=dante->position.y + dante->render->h/2;
+
+    point[7].x=dante->position.x + dante->render->w/2 - dante->width/2; //BAS GAUCHE
+    point[7].y=dante->position.y + (dante->render->h*3)/4;
+
+
+    couleur[0]=GetPixel (ha->h_col[ha->anim], point[0].x, point[0].y);
+    couleur[1]=GetPixel (ha->h_col[ha->anim], point[1].x, point[1].y);
+    couleur[2]=GetPixel (ha->h_col[ha->anim], point[2].x, point[2].y);
+    couleur[3]=GetPixel (ha->h_col[ha->anim], point[3].x, point[3].y);
+    couleur[4]=GetPixel (ha->h_col[ha->anim], point[4].x, point[4].y);
+    couleur[5]=GetPixel (ha->h_col[ha->anim], point[5].x, point[5].y);
+    couleur[6]=GetPixel (ha->h_col[ha->anim], point[6].x, point[6].y);
+    couleur[7]=GetPixel (ha->h_col[ha->anim], point[7].x, point[7].y);
+
+    for (i=0;i<8;i++)
+    {
+        if (couleur[i].r>=250 && couleur[i].g==0 && couleur[7].b==0)
+            col=1;
+    }
+    ha->cnt++;
+    if (ha->cnt%2)
+    {
+        if (ha->p==0)
+        {
+            if (ha->m==-1)
+                ha->anim+=ha->m;
+            else if (ha->m==2)
+                ha->anim+=ha->m;
+        }
+        if (ha->anim>12)
+        {
+            ha->anim=12;
+            ha->m=-1;
+        }
+        if (ha->anim==0)
+        {
+            ha->anim=0;
+            ha->p++;
+        }
+        if (ha->p>30)
+        {
+            ha->p=0;
+            ha->m=2;
+        }
+
+    }
+    SDL_BlitSurface(ha->h[ha->anim],&camera,ecran,NULL);
+    if (dante->detectable==1)
+    {
+    if (ha->hitonce==0)
+    {
+        if (col==1)
+        {
+        hp->vie--;
+        ha->hitonce=1;
+        }
+    }
+    if (ha->hitonce==1)
+    {
+        ha->time=SDL_GetTicks();
+    }
+    if ((ha->time%2000)==0)
+    {
+        ha->hitonce=0;
+        ha->time=0;
+    }
+    }
+    return col;
+}
+void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran,int max_position_right,int max_position_left,perso *dante,int nmbrofsprites,health *hl,int speed)
+{
+    int d=0;
     mob->position_affichage.x=(mob->position.x)-(*camera).x;
     mob->position_affichage.y=(mob->position.y)-(*camera).y;
-     if (mob->cnt_blit==5)
+    //fprintf(stderr,"detectable=%d\n",dante->detectable);
+        if (mob->cnt_blit==5)
         mob->compteur_enemie++;
     if (mob->cnt_blit>5)
     {
         mob->cnt_blit=0;
     }
-    if (mob->compteur_enemie>5)
+    if (mob->compteur_enemie>nmbrofsprites)
     {
         mob->compteur_enemie=0;
     }
-    if (mob->position.x==4000)
+    if(IA(dante,mob))
     {
-        mob->etat=2;
-    }
-    else if (mob->position.x==3000)
+        if (dante->detectable==1)
     {
-        mob->etat=1;
+
+        if(dante->position.x<mob->position.x)
+    	{
+    		mob->etat=2;
+    	}
+    	else if(dante->position.x>mob->position.x)
+    	{
+    		mob->etat=1;
+    	}
     }
+    else if (dante->detectable==0)
+    {
+        if (mob->position.x>max_position_right)
+    	{
+        	mob->etat=2;
+    	}
+    	else if (mob->position.x<max_position_left)
+    	{
+        	mob->etat=1;
+    	}
+    }
+    }
+    else
+    {
+    	if (mob->position.x>max_position_right)
+    	{
+        	mob->etat=2;
+    	}
+    	else if (mob->position.x<max_position_left)
+    	{
+        	mob->etat=1;
+    	}
+    }
+    if(IA(dante,mob))
+    {
+        if (dante->detectable==1)
+    {
+    	d=mob->position.x-dante->position.x;
+    	if(dante->position.x<mob->position.x)
+    	{
+            if (mob->position.x<max_position_left)
+            {
+                mob->position.x+=0;
+            }
+            else
+    		mob->position.x=dante->position.x+d-speed;
+    	}
+    	else
+    	{
+           if (mob->position.x>max_position_right)
+            {
+                mob->position.x+=0;
+            }
+            else
+    		mob->position.x=dante->position.x+d+speed;
+    	}
+    }
+        else if (dante->detectable==0)
+        {
+
+        if (mob->etat==1)
+        {
+        (mob->position.x)+=speed;
+        }
+        else if (mob->etat==2)
+        {
+        (mob->position.x)-=speed;
+        }
+        }
+    }
+    else
+    {
     if (mob->etat==1)
     {
-        (mob->position.x)+=1;
+        (mob->position.x)+=speed;
     }
     else if (mob->etat==2)
     {
-        (mob->position.x)-=1;
+        (mob->position.x)-=speed;
     }
-
+    }
     if (mob->etat==1)
     {
     SDL_BlitSurface(mob->cerebus_imin[mob->compteur_enemie],NULL,ecran,&mob->position_affichage);
@@ -110,37 +455,339 @@ void mob_yitharek(enemie *mob,SDL_Rect *camera,SDL_Surface *ecran)
     else if (mob->etat==2)
     {
     SDL_BlitSurface(mob->cerebus_isar[mob->compteur_enemie],NULL,ecran,&mob->position_affichage);
+
     }
-    //fprintf(stderr,"%d\n",mob->cnt_blit);
+    if (dante->detectable==1)
+    {
+    if (mob->hitonce==0)
+    {
+    if (((dante->position.x+(dante->render->w/2))<((mob->position.x+mob->cerebus_imin[0]->w)-20))&&((dante->position.x+(dante->render->w/2))>mob->position.x))
+    {
+        if (((dante->position.y+5)>mob->position.y)&&((dante->position.y+5)<mob->position.y+mob->cerebus_imin[0]->h))
+        {hl->vie--;
+        mob->hitonce=1;
+        }
+    }
+    }
+    }
+    if (mob->hitonce==1)
+    {
+        mob->time=SDL_GetTicks();
+    }
+    if ((mob->time%2000)==0)
+    {
+        mob->hitonce=0;
+        mob->time=0;
+    }
+    //fprintf(stderr,"lives=%d\n",dante->tentatives);
+     //fprintf(stderr,"hitonce=%d\n",mob->hitonce);
     mob->cnt_blit++;
 }
-void init_background2(background *level)
+void check_changement_stage3(int *f,perso *dante,button *butn,pause *ps)
+{
+    butn->show=0;
+    if ((dante->couleur[0].b==255&&dante->couleur[0].g==0&&dante->couleur[0].r==12)||(dante->couleur[2].b==255&&dante->couleur[2].g==0&&dante->couleur[2].r==12))
+    {
+        butn->show=1;
+        butn->cacher=1;
+    }
+    if ((*f==10)&&(butn->show==1)&&(dante->detectable==1))
+        dante->detectable=0;
+    else if ((*f==10)&&(butn->show==1)&&(dante->detectable==0))
+        dante->detectable=1;
+}
+void init_background3(background *level)
 {
     int i=0;
     char im[50];
     for(i=0; i<25; i++)
     {
-        sprintf(im,"images/stage2/stage55_%05d.jpg",i);
+        sprintf(im,"images/stage3/stage3.jpg",i);
         level->back[i]=IMG_Load(im);
     }
-    (*level).back_col=IMG_Load("stage55_00000.jpg");
+    (*level).back_col=IMG_Load("images/stage3/stage3_col.jpg");
     (*level).anim=0;
     level->cpt=0;
 
 }
-void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2)
+void init_stage3(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,enemie *mob,enemie *mob2,enemie *mob3,health *hl,hache *ha)
+{
+    init_background3(level);
+    init_input(in);
+    init_perso(per);
+    init_health_bar(hl);
+    init_hache(ha);
+    initialitation_mob(mob,1800,1050);
+    initialitation_mob(mob2,1100,1050);
+    initialitation_mob_kbir(mob3,8750,995);
+    init_buttons(butn,butn1);
+    init_pause_menu(ps);
+    per->position.y=600;        //y=215
+    per->position.x=300;
+    per->detectable=1;
+    (*camera).x=4000;
+    (*camera).y=0;
+    (*camera).h=600;
+    (*camera).w=1366;
+}
+///////////////////////////////////////////////
+///////////////////////////////////////////////
+int stage2()
+{
+    int continuer=1,f=0,s=0,cpt_perso=0,cnt3=0,manette=0,chrono=0;
+    int level_height=1200;
+    char d[3];
+    SDL_Surface *ecran = NULL;
+    SDL_Rect camera;
+    background level;
+    perso per;
+    inpu in;
+    time t;
+    button butn,butn1;
+    pause ps;
+    coins coin;
+    Texte texte;
+    const int FPS=60;
+    Uint32 start;
+    Mix_Music *musique;
+    SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();
+    ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+    init_stage2(&per,&camera,&in,ecran,&level,&butn,&ps,&butn1,&coin,&texte,&t);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+    musique = Mix_LoadMUS("stage2.mp3");
+    Mix_PlayMusic(musique, -1);
+    while (continuer!=0)
+    {
+        start=SDL_GetTicks();
+        input(&continuer,&f,&s,&in,&manette,d);
+        Deplacement_Perso(&per,&f,&s,&camera,level,&level_height);
+        scrolling(&per,&camera,&level_height);
+        animation(&per,&cpt_perso);
+        affichage_background(&level,ecran,camera);
+        afficher_collected_coins(&texte,&coin,ecran);
+        SDL_BlitSurface(per.render,NULL,ecran,&per.position_affichage);
+        blit_coins(&coin,&camera,ecran);
+        collect_coins(&coin,&per);
+        check_win(&t,&coin,&continuer,&per);
+        check_changement_stage2(&per,&t,&coin);
+        if (f==11)
+        {
+        ps.pause=1;
+
+        }
+        pause_menu(&ps,ecran,&continuer,&cnt3,level,camera,&manette);
+        if (f!=0 || chrono==1)
+        {
+            timer(&t,ecran,chrono);
+            chrono=1;
+        }
+        SDL_Flip(ecran);
+        fprintf(stderr,"%d\n",per.position.x);
+        if ((per.position.x>9900)&&(coin.collected==18))
+        {
+            return 3;
+            continuer=0;
+        }
+        if (1000/FPS>SDL_GetTicks()-start)
+            SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+
+    }
+    Mix_FreeMusic(musique);
+    SDL_FreeSurface(ecran);
+    SDL_Quit();
+
+}
+void check_changement_stage2(perso *dante,time *t,coins *cn)
+{
+    printf("r=%d\ng=%d\nb=%d\n",dante->couleur[0].r,dante->couleur[0].g,dante->couleur[0].b);
+    if ((dante->couleur[0].b==1&&dante->couleur[0].g==240&&dante->couleur[0].r==255)||(dante->couleur[2].b==0&&dante->couleur[2].g==240&&dante->couleur[2].r==255))
+    {
+         dante->position.x=500;
+            dante->position.y=1000;
+            t->temps=120000;
+            init_coins(cn);
+    }
+}
+void init_background2(background *level)
+{
+    int i=0;
+    char im[50];
+    level->back_col=NULL;
+    for(i=0; i<25; i++)
+    {
+        sprintf(im,"images/stage2/stage55_00000.jpg");
+        level->back[i]=IMG_Load(im);
+
+    }
+    level->back_col=IMG_Load("images/stage2/stage55_00000_col.jpg");
+    (*level).anim=0;
+    level->cpt=0;
+
+}
+void init_coins(coins *coin)
+{
+    int i;
+    coin->nbr_coin=18;
+    for(i=0;i< coin->nbr_coin;i++)
+     coin->coin[i]=IMG_Load("Gold.png");
+    coin->collected=0;
+    coin->position[0].x=2571;
+    coin->position[0].y=940;
+    coin->position[1].x=4149;
+    coin->position[1].y=940;
+    coin->position[2].x=5379;
+    coin->position[2].y=940;
+    coin->position[3].x=1330;
+    coin->position[3].y=940;
+
+    coin->position[4].x=6441;
+    coin->position[4].y=40;
+    coin->position[5].x=6632;
+    coin->position[5].y=234;
+    coin->position[6].x=5417;
+    coin->position[6].y=321;
+    coin->position[7].x=4595;
+    coin->position[7].y=321;
+    coin->position[8].x=3708;
+    coin->position[8].y=444;
+    coin->position[9].x=2926;
+    coin->position[9].y=288;
+    coin->position[10].x=2631;
+    coin->position[10].y=288;
+    coin->position[11].x=2330;
+    coin->position[11].y=288;
+    coin->position[12].x=2147;
+    coin->position[12].y=288;
+    coin->position[13].x=1814;
+    coin->position[13].y=288;
+    coin->position[14].x=6420;
+    coin->position[14].y=782;
+    coin->position[15].x=6822;
+    coin->position[15].y=1011;
+    coin->position[16].x=7497;
+    coin->position[16].y=716;
+    coin->position[17].x=7992;
+    coin->position[17].y=713;
+}
+void blit_coins(coins *coin,SDL_Rect *camera,SDL_Surface *ecran)
+{
+    int i;
+    for(i=0;i<coin->nbr_coin;i++)
+    {
+        coin->position_affichage[i].x=(coin->position[i].x) - (camera->x);
+        coin->position_affichage[i].y=(coin->position[i].y) - (camera->y);
+        SDL_BlitSurface(coin->coin[i],NULL,ecran,&coin->position_affichage[i]);
+    }
+    SDL_Flip(ecran);
+}
+void collect_coins(coins *coin,perso *per)
+{
+    int i,j;
+    for(i=0;i<coin->nbr_coin;i++)
+    {
+        if((per->position.x>=(coin->position[i].x)-10) && ((per->position.x)<=coin->position[i].x+coin->coin[i]->w) && (per->position.y +per->render->h >=coin->position[i].y ) && (per->position.y<=coin->position[i].y + coin->coin[i]->h))
+        {
+            coin->nbr_coin--;
+            coin->collected++;
+            for(j=i;j<coin->nbr_coin;j++)
+            {
+                coin->coin[j]=coin->coin[j+1];
+                coin->position[j]=coin->position[j+1];
+            }
+        }
+    }
+            //fprintf(stderr,"%d\n",coin->collected);
+
+}
+void init_texte(Texte *texte)
+{
+    (texte->couleur).r=255;
+    (texte->couleur).g=0;
+    (texte->couleur).b=0;;//noir
+
+    TTF_Init();
+    texte->police = TTF_OpenFont("polices/Cardinal.ttf",40);      /* Chargement de la police*/
+    (texte->position_txt).x=90;
+    (texte->position_txt).y=30;
+    (texte->position_icon).x=40;
+    (texte->position_icon).y=30;
+    texte->icon=IMG_Load("Gold.png");
+
+}
+void afficher_collected_coins(Texte *texte,coins *coin,SDL_Surface *ecran)
+{
+ sprintf((texte->text_a_afficher),"%d/18",(coin->collected));
+ (texte->text_surface) = TTF_RenderText_Blended((texte->police), (texte->text_a_afficher) , (texte->couleur));
+ SDL_BlitSurface( (texte->text_surface), NULL, ecran, &(texte->position_txt) );
+ SDL_BlitSurface(texte->icon, NULL, ecran, &(texte->position_icon));
+}
+void init_timer(time *t)
+{
+    t->temps=120000;
+    t->temps_actuel=SDL_GetTicks();
+    t->temps_precedent=SDL_GetTicks();
+    t->couleur.r=255;
+    t->couleur.g=0;
+    t->couleur.b=0;
+    t->angle=0;
+    t->pos_time.x=1150;
+    t->pos_time.y=30;
+    strcpy(t->policeH,"polices/Cardinal.ttf");
+    t->police=TTF_OpenFont(t->policeH, 40);
+    t->icon=IMG_Load("time.png");
+    t->pos_icon.x=1100;
+    t->pos_icon.y=30;
+}
+void timer (time *t,SDL_Surface *ecran,int chrono)
+{
+    char time[8];
+    t->temps_actuel = SDL_GetTicks();
+    if (chrono==0)
+        t->temps_precedent=SDL_GetTicks();
+    t->dt=((t->temps_actuel)-(t->temps_precedent));
+    t->temps-=t->dt;
+    //printf("%d\n",t->dt);
+    //printf("%d\n",t->temps);
+    t->temps_precedent=t->temps_actuel;
+    if (t->temps<0)
+        t->temps=0;
+    t->min=t->temps/60000;
+    t->sec=(t->temps%60000)/1000;
+    if (t->sec<10)
+        sprintf(time,"%d:0%d",t->min,t->sec);
+    else
+        sprintf(time,"%d:%d",t->min,t->sec);
+    t->aff_time = TTF_RenderText_Blended(t->police,time,t->couleur);
+    //t->aff_time = rotozoomSurface(t->aff_time,t->angle,1,0);
+    //t->angle+=1;
+    SDL_BlitSurface(t->aff_time,NULL,ecran,&t->pos_time);
+    SDL_BlitSurface(t->icon,NULL,ecran,&t->pos_icon);
+}
+void check_win(time *t,coins *coin,int *continuer,perso *per)
+{
+    if  ((t->temps==0) && (coin->collected<9))
+        {
+            per->position.x=500;
+            per->position.y=1000;
+            t->temps=120000;
+            init_coins(coin);
+        }
+}
+void init_stage2(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,pause *ps,button *butn1,coins *coin,Texte *texte,time *t)
 {
     int i,j;
     char im[50];
     init_background2(level);
     init_input(in);
     init_perso(per);
-    initialitation_mob(mob);
-    initialitation_mob(mob2);
     init_buttons(butn,butn1);
     init_pause_menu(ps);
-    per->position.y=215;
-    per->position.x=470;
+    init_coins(coin);
+    init_texte(texte);
+    init_timer(t);
+    per->position.x=500;
+    per->position.y=1050;
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
@@ -172,10 +819,14 @@ int stage1()
     locks lo;
     const int FPS=60;
     Uint32 start;
+    Mix_Music *musique;
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     ecran = SDL_SetVideoMode(1366, 600, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
     init_stage1(&per,&camera,&in,ecran,&level,&butn,&tab,&ps,&ind,&door,&mirro,&buck,&key,&pl,&lum,&butn1,&lo);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024);
+    musique = Mix_LoadMUS("stage1.mp3");
+    Mix_PlayMusic(musique, -1);
     while (continuer!=0)
     {
         start=SDL_GetTicks();
@@ -195,24 +846,22 @@ int stage1()
         bruler_porte(&lum,&door,ecran);
         lock(&per,ecran,level,camera,&lo);
         door.state[2]=lo.state;
-        //fprintf(stderr,"%d\n",per.position.x);
         if (per.position.x>9900)
         {
             return 2;
-            continuer=1;
+            continuer=0;
         }
         SDL_Flip(ecran);
         if (1000/FPS>SDL_GetTicks()-start)
             SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
     }
     SDL_FreeSurface(ecran);
+    Mix_FreeMusic(musique);
     SDL_Quit();
 
 }
 void init_stage1(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,background *level,button *butn,tableau *tab,pause *ps,indices *ind,doors *door,mirror *mirro,bucket *buck,keys *key,plant *pl,lumiere *lum,button *butn1,locks *lo)
 {
-    int i,j;
-    char im[50];
     init_background1(level);
     init_input(in);
     init_perso(per);
@@ -224,42 +873,13 @@ void init_stage1(perso *per,SDL_Rect *camera,inpu *in,SDL_Surface *ecran,backgro
     init_key(key);
     init_plant(pl);
     init_indices(ind);
-    per->position.x=8000;
+    //per->position.x=500;
+    //per->position.y=600;
     (*camera).x=4000;
     (*camera).y=0;
     (*camera).h=600;
     (*camera).w=1366;
     tab->cnt2=0; //compteur tableau animé
-    /*for(i=0;i<7;i++)
-    {
-    	sprintf(im,"%sjump%d.png",(*per).images,i+1);
-    	jump[i]=IMG_Load(im);
-    }
-    for(i=0;i<5;i++)
-    {
-    	sprintf(im,"%swalk_left%d.png",(*per).images,i+1) ;
-    	walk_left[i]=IMG_Load(im);
-    }
-    for(i=0;i<7;i++)
-    {
-    	sprintf(im,"%sjump_left%d.png",(*per).images,i+1);
-    	jump_left[i]=IMG_Load(im);
-    }
-    for(i=0;i<7;i++)
-    {
-    	sprintf(im,"%sjump_right%d.png",(*per).images,i+1);
-    	jump_right[i]=IMG_Load(im);
-    }
-    for(i=0;i<7;i++)
-    {
-    	sprintf(im,"%ssliding%d.png",(*per).images,i+1);
-    	sliding[i]=IMG_Load(im);
-    }
-    for(i=0;i<3;i++)
-    {
-    	sprintf(im,"%sduck%d.png",(*per).images,i+1);
-    	duck[i]=IMG_Load(im);
-    }*/
 }
 void init_input(inpu *in)
 {
@@ -424,20 +1044,54 @@ void init_portes(doors *door,locks *lo)
         door->state[i]=0;
     }
     for(i=0; i<=3; i++)
-        {
-            sprintf(im,"components/beb_%d.png",i+1);
-            door->door_A[0][i]=IMG_Load(im);
-        }
-   for(i=0; i<=3; i++)
-        {
-            sprintf(im,"components/beb_nar_%d.png",i+1);
-            door->door_A[1][i]=IMG_Load(im);
-        }
+    {
+        sprintf(im,"components/beb_%d.png",i+1);
+        door->door_A[0][i]=IMG_Load(im);
+    }
+    for(i=0; i<=3; i++)
+    {
+        sprintf(im,"components/beb_nar_%d.png",i+1);
+        door->door_A[1][i]=IMG_Load(im);
+    }
     for(i=0; i<=1; i++)
-        {
-            sprintf(im,"components/final_door%d.png",i+1);
-            door->door_A[2][i]=IMG_Load(im);
-        }
+    {
+        sprintf(im,"components/final_door%d.png",i+1);
+        door->door_A[2][i]=IMG_Load(im);
+    }
+}
+void health_bar(health *hl,SDL_Surface *ecran,perso *per,SDL_Rect *camera)
+{   int i=0;
+
+    hl->position.y=per->position_affichage.y-30;
+    hl->position.x=per->position_affichage.x-23;
+    for (i=0;i<5;i++)
+    {
+    if (hl->vie==i)
+    SDL_BlitSurface(hl->heal[i],NULL,ecran,&hl->position);
+    }
+    if(camera->x==0)
+        hl->position.x=per->position_affichage.x-23;
+
+       else if( camera->x == level_width - camera->w )
+    {
+        hl->position.x=per->position_affichage.x;
+    }
+    if (hl->vie<1)
+    {
+    per->position.x=300;
+    per->position.y=600;
+    hl->vie=4;
+    }
+}
+void init_health_bar(health *hl)
+{
+    hl->vie=4;
+    hl->heal[4]=IMG_Load("images/health0.png");
+    hl->heal[3]=IMG_Load("images/health1.png");
+    hl->heal[2]=IMG_Load("images/health2.png");
+    hl->heal[1]=IMG_Load("images/health3.png");
+    hl->heal[0]=IMG_Load("images/health4.png");
+
 }
 void init_perso(perso *per)
 {
@@ -486,7 +1140,7 @@ void init_perso(perso *per)
 }
 void input (int *continuer, int *f,int *s,inpu *in,int *manette,char d[3])
 {
-    int space=0,enter=0,escape=0,k;
+    int space=0,escape=0;
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -518,11 +1172,6 @@ void input (int *continuer, int *f,int *s,inpu *in,int *manette,char d[3])
             case SDLK_SPACE:
                 space=1;
                 break;
-            case SDLK_RETURN:
-            {
-                enter=1;
-            }
-            break;
             default:
                 break;
             }
@@ -587,7 +1236,7 @@ void input (int *continuer, int *f,int *s,inpu *in,int *manette,char d[3])
                 break;
             }
             */
-        if ((*in).right)
+    if ((*in).right)
     {
         if (((*in).up)&&((*s)==0))
         {
@@ -611,7 +1260,7 @@ void input (int *continuer, int *f,int *s,inpu *in,int *manette,char d[3])
         else
             (*f)=2;
     }
-    else if (enter)
+    else if (space)
         *f=10;
     else if (escape)
     {
@@ -705,7 +1354,7 @@ void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,do
         }
     }
     else ind->npaper=0;
-       if ((dante->couleur[0].b==90&&dante->couleur[0].g==0&&dante->couleur[0].r==0)||(dante->couleur[2].b==90&&dante->couleur[2].g==0&&dante->couleur[2].r==0))
+    if ((dante->couleur[0].b==90&&dante->couleur[0].g==0&&dante->couleur[0].r==0)||(dante->couleur[2].b==90&&dante->couleur[2].g==0&&dante->couleur[2].r==0))
     {
         butn->show=1;
         door->ndoor=1;
@@ -722,7 +1371,7 @@ void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,do
 
     }
     else door->ndoor=0;
-     //fprintf(stderr,"%d\n",door->state[2]);
+    //fprintf(stderr,"%d\n",door->state[2]);
     if ((dante->couleur[0].b==210&&dante->couleur[0].g==0&&dante->couleur[0].r==0)||(dante->couleur[2].b==210&&dante->couleur[2].g==0&&dante->couleur[2].r==0))
     {
         if (buck->picked==0)
@@ -822,7 +1471,7 @@ void check_changement(int *f,perso *dante,button *butn,pause *ps,indices *ind,do
 void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background level,int *level_height)
 {
     //printf("x=%d\ny=%d\n",per->position.x,per->position.y);1500 480
-    int col,f;
+    int f,a=0;
     perso per_0;
     per_0=(*per);
     (*per).state=0;
@@ -831,36 +1480,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
         (*per).speed=5;
     else
         (*per).speed=6;
-    /*if ((*s)<=-1)
-    {
-        if ((*s)<=-3)
-        {
-            (*per).position.y+=(*s);
-            (*s)+=1;
-            if (collision_back(per,level)==4)
-                (*s)=1;
-        }
-        else
-            (*s)=1;
-    }
-    if ((*s)>=1)
-    {
-        if ((*per).position.y<detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
-        {
-            (*per).position.y+=(*s);
-            (*s)++;
-            if ((*per).position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2)))
-            {
-                (*per).position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level)-(per->render->h-((per->render->h-per->height)/2));
-            }
-        }
-        else
-        {
-            (*s)=0;
-            (*per).position.y=detec_sol(per->position.x + per->render->w-20,level);
-        }
-    }*/
-    //fprintf(stderr,"%d\n",f);
+    collision_back(per,level);
     if ((*s)==1)
     {
         if (per->jm!=1)
@@ -873,11 +1493,11 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             per->position_jump.y=0;
             per->jm=1;
         }
-        if (per->position.y>detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)))
+        if ((per->position.y)>(detec_sol(((per->position.x) + (per->render->w/2)),level,level_height,per)-per->render->h))
         {
             (*s)=0;
             per->jm=0;
-            per->position.y=detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2));
+            per->position.y=detec_sol(((per->position.x) + (per->render->w/2)),level,level_height,per)-per->render->h;
             per->col_jm=0;
             per->tomb=0;
         }
@@ -887,7 +1507,7 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x));
             per->position.y=per->position_pre_jump.y-per->position_jump.y;
         }
-        else if ((per->col==4)&&(per->col_jm==0))
+        else if ((per->c.droite_haut || per->c.gauche_haut)&&(per->col_jm==0))
         {
             per->position_jump.x=-per->position_jump.x;
             (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
@@ -901,7 +1521,6 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             (*per).position_jump.y=(-0.023*(per->position_jump.x*per->position_jump.x))+150;
             per->position.y=per->position_pre_jump.y-per->position_jump.y;
         }
-        //printf("%d     %d\n",(*per).position_jump.x,(*per).position_jump.y);
     }
     if (f==1)
     {
@@ -921,88 +1540,46 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
     }
     else if (f==3)
     {
-        /*if ((*per).position.y>0)
-        {
-            (*per).position.y-=(*per).speed;
-        }*/
         per->state=5;
-    }/*
-    else if (f==4)
-    {
-        if ((*per).position.y<260)
-        {
-            (*per).position.y+=(*per).speed;
-        }
-    }*/
+    }
     else if (f==5)
     {
-        /*if ((*per).position.x<(level_width-per->render->w-50))
-        {
-            (*per).position.x+=(*per).speed;
-        }
-        if ((*per).position.y>0)
-        {
-            (*per).position.y-=(*per).speed;
-        }*/
         (*per).state=3;
     }
     else if (f==6)
     {
-        /*if ((*per).position.x>(per->render->w/2)+(per->width/2)+2)
-        {
-            (*per).position.x-=(*per).speed;
-        }
-        if ((*per).position.y>0)
-        {
-            (*per).position.y-=(*per).speed;
-        }*/
         (*per).state=4;
     }
-    /*else if (f==7)
-    {
-        if ((*per).position.x<(level_width-per->render->w))
-        {
-            (*per).position.x+=(*per).speed;
-        }
-        if ((*per).position.y<260)
-        {
-            (*per).position.y+=(*per).speed;
-        }
-    }
-    else if (f==8)
-    {
-        if ((*per).position.x>(per->render->w/2)+(per->width/2)+2)
-        {
-            (*per).position.x-=(*per).speed;
-        }
-        if ((*per).position.y<260)
-        {
-            (*per).position.y+=(*per).speed;
-        }
-    }*/
     else
     {
         (*per).state=0;
     }
-    collision_back(per,level);
-    if (per->col==1)
+    if (per->c.gauche_haut && per->c.gauche_centre)
     {
-        (*per)=per_0;
+        (*per).position.x=per_0.position.x;
+        //(*per).position.x+=(*per).speed;
         (*per).state=0;
-        (*s)=0;
-    }
-    else if (per->col==5)
-    {
-        if ((*l)==1)
-            (*per).position.x-=(*per).speed;
-        if ((*l)==2)
+        if (f==1)
             (*per).position.x+=(*per).speed;
+        //(*s)=0;
+        //per->jumping=0;
+    }
+    else if (per->c.droite_haut && per->c.droite_centre)
+    {
+        (*per).position.x=per_0.position.x;
+        //(*per).position.x-=(*per).speed;
         (*per).state=0;
+        if (f==2)
+            (*per).position.x-=(*per).speed;
+        //(*s)=0;
         //per->jumping=0;
     }
     else if ((*s)==0)
-        if ((detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)))-(*per).position.y<20)
-            (*per).position.y=(detec_sol(((per->position.x) + (per->render->w/2) + (per->width/2)),level,level_height)-(per->render->h-((per->render->h-per->height)/2)));
+    {
+        if (((detec_sol(((per->position.x) + (per->render->w/2)),level,level_height,per))-per->render->h-(*per).position.y<20)&&(!per->c.droite_haut)&&(!per->c.gauche_haut))
+        {
+            (*per).position.y=detec_sol(((per->position.x) + (per->render->w/2)),level,level_height,per)-per->render->h;
+        }
         else if (per->tomb==0)
         {
             per->jm=0;
@@ -1010,6 +1587,16 @@ void Deplacement_Perso (perso *per,int *l,int *s,SDL_Rect *camera,background lev
             per->tomb=1;
             (*s)=1;
         }
+    }
+    //printf("%d\n",(*s));
+
+    if (per->col==5)
+    {
+        if ((*l)==1)
+            (*per).position.x-=(*per).speed;
+        (*per).state=0;
+        //(*s)=0;
+    }
     per->col=0;
 }
 void scrolling (perso *per, SDL_Rect *camera,int *level_height)
@@ -1048,7 +1635,6 @@ SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y)
 }
 void collision_back(perso *dante,background a)
 {
-    int i=0;
 
     SDL_Rect point[8];
 
@@ -1094,20 +1680,54 @@ void collision_back(perso *dante,background a)
     else if (couleur[1].r==255 && couleur[1].g==255 && couleur[1].b==255)
     return 3;*/
 
-    if ((dante->couleur[2].r==255 && dante->couleur[2].g==255 && dante->couleur[2].b==255)||(dante->couleur[6].r==255 && dante->couleur[6].g==255 && dante->couleur[6].b==255)||(dante->couleur[7].r==255 && dante->couleur[7].g==255 && dante->couleur[7].b==255))
+    /*if ((dante->couleur[2].r==255 && dante->couleur[2].g==255 && dante->couleur[2].b==255)||(dante->couleur[6].r==255 && dante->couleur[6].g==255 && dante->couleur[6].b==255)||(dante->couleur[7].r==255 && dante->couleur[7].g==255 && dante->couleur[7].b==255))
         dante->col= 3;
     else if (dante->couleur[3].r==255 && dante->couleur[3].g==255 && dante->couleur[3].b==255)
         dante->col= 4;
     else if ((dante->couleur[4].r==255 && dante->couleur[4].g==255 && dante->couleur[4].b==255)||(dante->couleur[6].r==255 && dante->couleur[6].g==255 && dante->couleur[6].b==255))
         dante->col= 5;
     /*if ((couleur[6].r==255 && couleur[6].g==255 && couleur[6].b==255)||(couleur[4].r==255 && couleur[4].g==255 && couleur[4].b==255))
-    return 5;*/
-    else if (dante->couleur[5].r==255 && dante->couleur[5].g==255 && dante->couleur[5].b==255)
+    return 5;
+    else if ((dante->couleur[5].r==255 && dante->couleur[5].g==255 && dante->couleur[5].b==255)||(dante->couleur[7].r==255 && dante->couleur[7].g==255 && dante->couleur[7].b==255))
         dante->col= 2;
     else if ((dante->couleur[0].r==255 && dante->couleur[0].g==255 && dante->couleur[0].b==255)&&(dante->couleur[5].r==255 && dante->couleur[5].g==255 && dante->couleur[5].b==255))
         dante->col= 5;
     else if ((dante->couleur[0].r==255 && dante->couleur[0].g==255 && dante->couleur[0].b==255)&&(dante->couleur[4].r==255 && dante->couleur[4].g==255 && dante->couleur[4].b==255)&&(dante->couleur[5].r==255 && dante->couleur[5].g==255 && dante->couleur[5].b==255))
-        dante->col= 1;
+        dante->col= 1;*/
+    //fprintf(stderr,"blue=%d\n green=%d\n red=%d\n",dante->couleur[5].b,dante->couleur[5].g,dante->couleur[5].r);
+    if (dante->couleur[0].r==255 && dante->couleur[0].g==255 && dante->couleur[0].b==255)
+        dante->c.droite_centre=1;
+    else
+        dante->c.droite_centre=0;
+    if (dante->couleur[1].r==255 && dante->couleur[1].g==255 && dante->couleur[1].b==255)
+        dante->c.bas=1;
+    else
+        dante->c.bas=0;
+    if (dante->couleur[2].r==255 && dante->couleur[2].g==255 && dante->couleur[2].b==255)
+        dante->c.gauche_centre=1;
+    else
+        dante->c.gauche_centre=0;
+    if (dante->couleur[3].r==255 && dante->couleur[3].g==255 && dante->couleur[3].b==255)
+        dante->c.haut=1;
+    else
+        dante->c.haut=0;
+    if (dante->couleur[4].r==255 && dante->couleur[4].g==255 && dante->couleur[4].b==255)
+        dante->c.droite_haut=1;
+    else
+        dante->c.droite_haut=0;
+    if (dante->couleur[5].r==255 && dante->couleur[5].g==255 && dante->couleur[5].b==255)
+        dante->c.droite_bas=1;
+    else
+        dante->c.droite_bas=0;
+    if (dante->couleur[6].r==255 && dante->couleur[6].g==255 && dante->couleur[6].b==255)
+        dante->c.gauche_haut=1;
+    else
+        dante->c.gauche_haut=0;
+    if (dante->couleur[7].r==255 && dante->couleur[7].g==255 && dante->couleur[7].b==255)
+        dante->c.gauche_bas=1;
+    else
+        dante->c.gauche_bas=0;
+
 }
 void collision_doors(perso *dante,doors *door)
 {
@@ -1123,7 +1743,7 @@ void collision_doors(perso *dante,doors *door)
         if (door->state[1]==0)
             dante->col=5;
     }
-     else if ((dante->couleur[0].b==0&&dante->couleur[0].g==90&&dante->couleur[0].r==0)||(dante->couleur[2].b==0&&dante->couleur[2].g==90&&dante->couleur[2].r==0))
+    else if ((dante->couleur[0].b==0&&dante->couleur[0].g==90&&dante->couleur[0].r==0)||(dante->couleur[2].b==0&&dante->couleur[2].g==90&&dante->couleur[2].r==0))
     {
         if (door->state[2]==0)
             dante->col=5;
@@ -1239,23 +1859,25 @@ void animation(perso *per,int *cpt_perso)
         (*per).anim=0;
     }
 }
-int detec_sol (int x,background a,int *level_height)
+int detec_sol (int x,background a,int *level_height,perso *per)
 {
     int i,y;
     SDL_Color couleur;
-    i=(*level_height)-10;
+    i=per->position.y+per->render->h-5; //(*level_height)-10 //per->position.y+100
     y=0;
-    while ((i>0)&&(y==0))
+    while ((i<(*level_height))&&(y==0))
     {
         couleur=GetPixel (a.back_col, x, i);
-        if (couleur.r!=255 || couleur.g!=255 || couleur.b!=255)
+    //fprintf(stderr,"couleur.r=%d\ncouleur.b=%d\ncouleur.g=%d\n",couleur.r,couleur.b,couleur.g);
+        if (couleur.r>=252 && couleur.g>=252 && couleur.b>=252)
         {
             y=i;
         }
-        i--;
+        i++;
     }
     if (y==0)
         y=400;
+        //fprintf(stderr,"i=%d\n",i);
     return y;
 }
 void black (SDL_Surface *ecran, int trans,int *t)
@@ -1423,7 +2045,7 @@ void pause_menu(pause *ps,SDL_Surface *ecran,int *continuer,int *compteur,backgr
                     case SDLK_DOWN:
                         curseur++;
                         break;
-                    case SDLK_RETURN:
+                    case SDLK_SPACE:
                         ok=1;
                         break;
                         break;
@@ -1641,7 +2263,7 @@ void read_paper(pause *ps,perso *per,SDL_Surface *ecran)
                 case SDL_KEYDOWN:
                     switch(event.key.keysym.sym)
                     {
-                    case SDLK_RETURN:
+                    case SDLK_SPACE:
                         ps->inv.use=0;
                         break;
                     default:
@@ -1697,9 +2319,9 @@ void blit_door_in_both_states(doors *door,perso *per,SDL_Rect *camera,SDL_Surfac
         }
     }
     if (door->state[2]==0)
-            SDL_BlitSurface(door->door_A[2][0],NULL,ecran,&door->position_affichage[i]);
-        else if (door->state[2]==1)
-            SDL_BlitSurface(door->door_A[2][1],NULL,ecran,&door->position_affichage[i]);
+        SDL_BlitSurface(door->door_A[2][0],NULL,ecran,&door->position_affichage[i]);
+    else if (door->state[2]==1)
+        SDL_BlitSurface(door->door_A[2][1],NULL,ecran,&door->position_affichage[i]);
 }
 void blit_paper(indices *ind,pause *ps,SDL_Surface *ecran,SDL_Rect *camera,perso *per)
 {
@@ -1781,7 +2403,6 @@ void blit_key(keys *key,SDL_Rect *camera,plant *pl,perso *per,pause *ps,SDL_Surf
 {
     key->position_affichage.x=(key->position.x)-(*camera).x;
     key->position_affichage.y=(key->position.y)-(*camera).y;
-    fprintf(stderr,"%d\n",pl->cnt);
     if (per->interacted==1)
     {
         if (key->n_key==1)
@@ -1795,10 +2416,11 @@ void blit_key(keys *key,SDL_Rect *camera,plant *pl,perso *per,pause *ps,SDL_Surf
     {
         if (pl->cnt==64)
         {
-        if (key->picked==0)
-            {SDL_BlitSurface(key->key,NULL,ecran,&key->position_affichage);
-             }
-             }
+            if (key->picked==0)
+            {
+                SDL_BlitSurface(key->key,NULL,ecran,&key->position_affichage);
+            }
+        }
     }
     if (key->picked==1)
     {
@@ -1862,7 +2484,7 @@ void blit_mirroir(mirror *mirro,SDL_Rect *camera,SDL_Surface *ecran,perso *per,l
 }
 void rotation_mirroir(mirror *mirr,button *butn1,background *level,SDL_Surface *ecran,SDL_Rect *camera,perso *per,lumiere *lum,doors *door)
 {
-    int a=1,i;
+    int a=1;
     SDL_Event event;
     if(mirr->ok==1)
     {
@@ -1893,6 +2515,7 @@ void rotation_mirroir(mirror *mirr,button *butn1,background *level,SDL_Surface *
                         mirr->ok=2;
                         lum->ok=1;
                         break;
+                    default: break;
                     }
                 }
             }
@@ -1942,158 +2565,159 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
 
     if (lo->interacted==1)
     {
-    int i,curseur=0,enter=0,code[2]={5,8},code1[2]={11,11},cpt=0,b=0,f=0,a;
-    char im[50];
-    SDL_Event event;
-    SDL_Color couleur={0, 0, 0};
-    lo->state=0;
-    SDL_Rect pos_c[2];
-    TTF_Font *police;
-    SDL_Surface *c[10];
-    char policeH[]="polices/Cardinal.ttf";
-    const int FPS=60;
-    Uint32 start;
-    police = TTF_OpenFont(policeH, 30);
-    c[0] = TTF_RenderText_Blended(police, "0", couleur);
-    c[1] = TTF_RenderText_Blended(police, "1", couleur);
-    c[2] = TTF_RenderText_Blended(police, "2", couleur);
-    c[3] = TTF_RenderText_Blended(police, "3", couleur);
-    c[4] = TTF_RenderText_Blended(police, "4", couleur);
-    c[5] = TTF_RenderText_Blended(police, "5", couleur);
-    c[6] = TTF_RenderText_Blended(police, "6", couleur);
-    c[7] = TTF_RenderText_Blended(police, "7", couleur);
-    c[8] = TTF_RenderText_Blended(police, "8", couleur);
-    c[9] = TTF_RenderText_Blended(police, "9", couleur);
-    pos_c[0].x=595;
-    pos_c[0].y=235+30;
-    pos_c[1].x=735;
-    pos_c[1].y=235+30;
-    for (i=0;i<3;i++)
-    {
-        sprintf(im,"components/kouba_%d.png",i);
-        lo->l[i]=IMG_Load(im);
-    }
-    for (i=0;i<10;i++)
-    {
-        sprintf(im,"components/Keyboard_White_%d.png",i);
-        lo->button[i][0]=IMG_Load(im);
-        sprintf(im,"components/Keyboard_Black_%d.png",i);
-        lo->button[i][1]=IMG_Load(im);
-    }
-    lo->position.x=480;
-    lo->position.y=30;
-    lo->position_button[0].x=480;
-    lo->position_button[0].y=400;
-    lo->position_mouse[0][0].x=lo->position_button[0].x;
-    lo->position_mouse[0][1].x=lo->position_button[0].x+80;
-    lo->position_mouse[0][0].y=lo->position_button[0].y;
-    lo->position_mouse[0][1].y=lo->position_button[0].y+80;
-    for (i=1;i<5;i++)
-    {
-        lo->position_button[i].x=lo->position_button[i-1].x+80;
-        lo->position_button[i].y=400;
-        lo->position_mouse[i][0].x=lo->position_button[i].x;
-        lo->position_mouse[i][1].x=lo->position_button[i].x+80;
-        lo->position_mouse[i][0].y=lo->position_button[i].y;
-        lo->position_mouse[i][1].y=lo->position_button[i].y+80;
-    }
-    for (i=5;i<10;i++)
-    {
-        lo->position_button[i].x=lo->position_button[i-5].x;
-        lo->position_button[i].y=480;
-        lo->position_mouse[i][0].x=lo->position_button[i].x;
-        lo->position_mouse[i][1].x=lo->position_button[i].x+80;
-        lo->position_mouse[i][0].y=lo->position_button[i].y;
-        lo->position_mouse[i][1].y=lo->position_button[i].y+80;
-    }
-    /*for (i=0;i<10;i++)
-    {
-        SDL_BlitSurface(lo.button[i][0],NULL,ecran,&lo.position_button[i]);
-    }*/
-    while ((lo->interacted==1)&&(per->tentatives>0))
-    {
-        //fprintf(stderr,"%d\n",lo->interacted);
-        a=arduinoWriteData(per->tentatives);
-        SDL_BlitSurface(level.back[level.anim],&camera,ecran,NULL);
-        SDL_BlitSurface(per->render,NULL,ecran,&per->position_affichage);
-        SDL_BlitSurface(lo->l[b],NULL,ecran,&lo->position);
-        if (code1[0]!=11)
-            SDL_BlitSurface(c[code1[0]],NULL,ecran,&pos_c[0]);
-        if (code1[1]!=11)
-            SDL_BlitSurface(c[code1[1]],NULL,ecran,&pos_c[1]);
-
-        if (f!=0)
+        int i,curseur=0,enter=0,code[2]= {5,8},code1[2]= {11,11},cpt=0,b=0,f=0,a;
+        char im[50];
+        SDL_Event event;
+        SDL_Color couleur= {0, 0, 0};
+        lo->state=0;
+        SDL_Rect pos_c[2];
+        TTF_Font *police;
+        SDL_Surface *c[10];
+        char policeH[]="polices/Cardinal.ttf";
+        const int FPS=60;
+        Uint32 start;
+        police = TTF_OpenFont(policeH, 30);
+        c[0] = TTF_RenderText_Blended(police, "0", couleur);
+        c[1] = TTF_RenderText_Blended(police, "1", couleur);
+        c[2] = TTF_RenderText_Blended(police, "2", couleur);
+        c[3] = TTF_RenderText_Blended(police, "3", couleur);
+        c[4] = TTF_RenderText_Blended(police, "4", couleur);
+        c[5] = TTF_RenderText_Blended(police, "5", couleur);
+        c[6] = TTF_RenderText_Blended(police, "6", couleur);
+        c[7] = TTF_RenderText_Blended(police, "7", couleur);
+        c[8] = TTF_RenderText_Blended(police, "8", couleur);
+        c[9] = TTF_RenderText_Blended(police, "9", couleur);
+        pos_c[0].x=595;
+        pos_c[0].y=235+30;
+        pos_c[1].x=735;
+        pos_c[1].y=235+30;
+        for (i=0; i<3; i++)
         {
-            f++;
-            if (f<20)
+            sprintf(im,"components/kouba_%d.png",i);
+            lo->l[i]=IMG_Load(im);
+        }
+        for (i=0; i<10; i++)
+        {
+            sprintf(im,"components/Keyboard_White_%d.png",i);
+            lo->button[i][0]=IMG_Load(im);
+            sprintf(im,"components/Keyboard_Black_%d.png",i);
+            lo->button[i][1]=IMG_Load(im);
+        }
+        lo->position.x=480;
+        lo->position.y=30;
+        lo->position_button[0].x=480;
+        lo->position_button[0].y=400;
+        lo->position_mouse[0][0].x=lo->position_button[0].x;
+        lo->position_mouse[0][1].x=lo->position_button[0].x+80;
+        lo->position_mouse[0][0].y=lo->position_button[0].y;
+        lo->position_mouse[0][1].y=lo->position_button[0].y+80;
+        for (i=1; i<5; i++)
+        {
+            lo->position_button[i].x=lo->position_button[i-1].x+80;
+            lo->position_button[i].y=400;
+            lo->position_mouse[i][0].x=lo->position_button[i].x;
+            lo->position_mouse[i][1].x=lo->position_button[i].x+80;
+            lo->position_mouse[i][0].y=lo->position_button[i].y;
+            lo->position_mouse[i][1].y=lo->position_button[i].y+80;
+        }
+        for (i=5; i<10; i++)
+        {
+            lo->position_button[i].x=lo->position_button[i-5].x;
+            lo->position_button[i].y=480;
+            lo->position_mouse[i][0].x=lo->position_button[i].x;
+            lo->position_mouse[i][1].x=lo->position_button[i].x+80;
+            lo->position_mouse[i][0].y=lo->position_button[i].y;
+            lo->position_mouse[i][1].y=lo->position_button[i].y+80;
+        }
+        /*for (i=0;i<10;i++)
+        {
+            SDL_BlitSurface(lo.button[i][0],NULL,ecran,&lo.position_button[i]);
+        }*/
+        while ((lo->interacted==1)&&(per->tentatives>0))
+        {
+            //fprintf(stderr,"%d\n",lo->interacted);
+            a=arduinoWriteData(per->tentatives);
+            SDL_BlitSurface(level.back[level.anim],&camera,ecran,NULL);
+            SDL_BlitSurface(per->render,NULL,ecran,&per->position_affichage);
+            SDL_BlitSurface(lo->l[b],NULL,ecran,&lo->position);
+            if (code1[0]!=11)
+                SDL_BlitSurface(c[code1[0]],NULL,ecran,&pos_c[0]);
+            if (code1[1]!=11)
+                SDL_BlitSurface(c[code1[1]],NULL,ecran,&pos_c[1]);
+
+            if (f!=0)
             {
-                if (f%2==1)
+                f++;
+                if (f<20)
                 {
-                    pos_c[0].x=593;
-                    pos_c[1].x=733;
-                    lo->position.x=478;
+                    if (f%2==1)
+                    {
+                        pos_c[0].x=593;
+                        pos_c[1].x=733;
+                        lo->position.x=478;
+                    }
+                    else
+                    {
+                        pos_c[0].x=597;
+                        pos_c[1].x=737;
+                        lo->position.x=482;
+                    }
+                    a=arduinoWriteData(per->tentatives+5);
+
                 }
                 else
                 {
-                    pos_c[0].x=597;
-                    pos_c[1].x=737;
-                    lo->position.x=482;
+                    f=0;
+                    code1[0]=11;
+                    code1[1]=11;
+                    per->tentatives--;
+                    pos_c[0].x=595;
+                    pos_c[1].x=735;
+                    lo->position.x=480;
+                    if (per->tentatives==0)
+                    {
+                        lo->interacted=0;
+                    }
                 }
-                a=arduinoWriteData(per->tentatives+5);
-
+            }
+            else if (lo->state==0)
+            {
+                for (i=0; i<10; i++)
+                {
+                    if (curseur==i)
+                        SDL_BlitSurface(lo->button[i][1],NULL,ecran,&lo->position_button[i]);
+                    else
+                        SDL_BlitSurface(lo->button[i][0],NULL,ecran,&lo->position_button[i]);
+                }
             }
             else
             {
-                f=0;
-                code1[0]=11;
-                code1[1]=11;
-                per->tentatives--;
-                pos_c[0].x=595;
-                pos_c[1].x=735;
-                lo->position.x=480;
-                if (per->tentatives==0)
-                {
+                cpt++;
+                if (cpt==5)
+                    b=1;
+                if (cpt==10)
+                    b=2;
+                if (cpt==15)
                     lo->interacted=0;
-                }
             }
-        }
-        else if (lo->state==0)
-        {
-            for (i=0;i<10;i++)
+            while (SDL_PollEvent(&event))
             {
-                if (curseur==i)
-                    SDL_BlitSurface(lo->button[i][1],NULL,ecran,&lo->position_button[i]);
-                else
-                    SDL_BlitSurface(lo->button[i][0],NULL,ecran,&lo->position_button[i]);
-            }
-        }
-        else
-        {
-            cpt++;
-            if (cpt==5)
-                b=1;
-            if (cpt==10)
-                b=2;
-            if (cpt==15)
-                lo->interacted=0;
-        }
-        while (SDL_PollEvent(&event))
-        {
-            switch(event.type)
-            {
-                case SDL_KEYDOWN:
-                switch(event.key.keysym.sym)
+                switch(event.type)
                 {
+                case SDL_KEYDOWN:
+                    switch(event.key.keysym.sym)
+                    {
                     case SDLK_ESCAPE:
                         lo->interacted=0;
-                    break;
-                }
+                        break;
+                    default: break;
+                    }
                 case SDL_MOUSEBUTTONUP:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    if ((cpt==0)&&(f==0))
-                    enter++;
-                }
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        if ((cpt==0)&&(f==0))
+                            enter++;
+                    }
                 case SDL_MOUSEMOTION:
                     if ((event.motion.x>lo->position_mouse[0][0].x)&&(event.motion.x<lo->position_mouse[0][1].x)&&(event.motion.y>lo->position_mouse[0][0].y)&&(event.motion.y<lo->position_mouse[0][1].y))
                     {
@@ -2139,60 +2763,61 @@ int lock (perso *per,SDL_Surface *ecran,background level,SDL_Rect camera,locks *
                     {
                         curseur=-1;
                     }
-                break;
-            }
-        }
-        if ((enter==1)&&(code1[0]==11))
-        {
-            for (i=0;i<10;i++)
-            {
-                if (curseur==i)
-                {
-                    code1[0]=curseur;
+                    break;
+                    default: break;
                 }
             }
-            if (code1[0]==11)
-                enter=0;
-        }
-        if ((enter==2)&&(code1[1]==11))
-        {
-            for (i=0;i<10;i++)
+            if ((enter==1)&&(code1[0]==11))
             {
-                if (curseur==i)
+                for (i=0; i<10; i++)
                 {
-                    code1[1]=curseur;
+                    if (curseur==i)
+                    {
+                        code1[0]=curseur;
+                    }
                 }
+                if (code1[0]==11)
+                    enter=0;
             }
-            if (code1[1]==11)
+            if ((enter==2)&&(code1[1]==11))
+            {
+                for (i=0; i<10; i++)
+                {
+                    if (curseur==i)
+                    {
+                        code1[1]=curseur;
+                    }
+                }
+                if (code1[1]==11)
                 {
                     enter=1;
                 }
-        }
-        if ((code1[0]!=11)&&(code1[1]!=11))
-        {
-            if ((code1[0]==code[0])&&(code1[1]==code[1])&&(cpt==0))
+            }
+            if ((code1[0]!=11)&&(code1[1]!=11))
             {
-                lo->state=1;
-                cpt=1;
-                /*for (i=0;i<20;i++)
+                if ((code1[0]==code[0])&&(code1[1]==code[1])&&(cpt==0))
                 {
-                    SDL_BlitSurface(lo.l[i/5],NULL,ecran,&lo.position);
-                }*/
-            }
-            else if ((cpt==0)&&(f==0))
-            {
+                    lo->state=1;
+                    cpt=1;
+                    /*for (i=0;i<20;i++)
+                    {
+                        SDL_BlitSurface(lo.l[i/5],NULL,ecran,&lo.position);
+                    }*/
+                }
+                else if ((cpt==0)&&(f==0))
+                {
 
-                f=1;
-                enter=0;
+                    f=1;
+                    enter=0;
+                }
             }
+            //printf("%d%d\n%d",code1[0],code1[1],f);
+            if (1000/FPS>SDL_GetTicks()-start)
+                SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
+            SDL_Flip(ecran);
         }
-        //printf("%d%d\n%d",code1[0],code1[1],f);
-        if (1000/FPS>SDL_GetTicks()-start)
-            SDL_Delay(1000/FPS-(SDL_GetTicks()-start));
-        SDL_Flip(ecran);
-    }
-    fprintf(stderr,"%d\n",lo->state);
-    return lo->state;
+        //fprintf(stderr,"%d\n",lo->state);
+        return lo->state;
 
     }
 }
@@ -2227,7 +2852,7 @@ int arduinoWriteData(int x)
     if(f == NULL)
         return(-1);
 
-    fprintf(f,"%d",x);
+    //fprintf(f,"%d",x);
     //printf("arduino_input=%d\n",*x);
     //printf("arduino_input=%d\n",*x);
 
